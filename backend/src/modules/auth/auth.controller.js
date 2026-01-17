@@ -1,7 +1,7 @@
 const { registerSchema, loginSchema } = require('./auth.validator');
 const authService = require('./auth.service');
-const { ApiResponse } = require('../../responses/api.response');
-const { HTTP_STATUS } = require('../../constants/http-status');
+const { ApiResponse } = require('@/responses/api.response');
+const { HTTP_STATUS } = require('@/constants/http-status');
 const { AUTH_MESSAGES } = require('./auth.constants');
 
 const register = async (req, res, next) => {

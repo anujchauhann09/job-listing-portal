@@ -1,4 +1,4 @@
-const { HTTP_STATUS } = require('../constants/http-status');
+const { HTTP_STATUS } = require('@/constants/http-status');
 
 class ApiResponse {
   constructor({ success = true, message = '', data = null }) {

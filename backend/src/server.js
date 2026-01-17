@@ -1,3 +1,4 @@
+require('module-alias/register');
 const app = require("./app");
 const { port } = require("./config/env");
 const logger = require("./config/logger");

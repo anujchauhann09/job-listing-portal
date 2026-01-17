@@ -1,6 +1,6 @@
 const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
-const logger = require('../config/logger');
+const logger = require('@/config/logger');
 
 
 const requestIdMiddleware = (req, res, next) => {

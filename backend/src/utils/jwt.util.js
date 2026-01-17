@@ -4,7 +4,7 @@ const {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
   JWT_ALGORITHM,
-} = require("../config/jwt.config");
+} = require("@/config/jwt.config");
 
 const generateAccessToken = (payload) => {
   return jwt.sign(payload, JWT_SECRET, {

@@ -1,11 +1,11 @@
-const prisma = require('../../config/prisma');
-const { hashPassword, comparePassword } = require('../../utils/password.util');
-const { generateAccessToken, generateRefreshToken } = require('../../utils/jwt.util');
-const AppException = require('../../exceptions/app.exception');
-const { REFRESH_TOKEN_EXPIRES_IN } = require('../../config/jwt.config');
-const { getExpiryDate } = require("../../utils/time.util");
+const prisma = require('@/config/prisma');
+const { hashPassword, comparePassword } = require('@/utils/password.util');
+const { generateAccessToken, generateRefreshToken } = require('@/utils/jwt.util');
+const AppException = require('@/exceptions/app.exception');
+const { REFRESH_TOKEN_EXPIRES_IN } = require('@/config/jwt.config');
+const { getExpiryDate } = require("@/utils/time.util");
 
-const { HTTP_STATUS } = require('../../constants/http-status');
+const { HTTP_STATUS } = require('@/constants/http-status');
 const {
   AUTH_MESSAGES,
   USER_TYPES,

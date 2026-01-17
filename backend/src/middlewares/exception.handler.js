@@ -1,9 +1,9 @@
-const AppException = require('../exceptions/app.exception');
-const { ApiResponse } = require('../responses/api.response');
-const logger = require('../config/logger');
-const { formatErrorForLog } = require('../utils/log-format.util');
-const { HTTP_STATUS } = require('../constants/http-status');
-const { ERROR_MESSAGES } = require('../constants/error-messages');
+const AppException = require('@/exceptions/app.exception');
+const { ApiResponse } = require('@/responses/api.response');
+const logger = require('@/config/logger');
+const { formatErrorForLog } = require('@/utils/log-format.util');
+const { HTTP_STATUS } = require('@/constants/http-status');
+const { ERROR_MESSAGES } = require('@/constants/error-messages');
 
 const exceptionHandler = (err, req, res, next) => {
   let status = HTTP_STATUS.INTERNAL_SERVER_ERROR;

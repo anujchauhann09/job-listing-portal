@@ -1,6 +1,6 @@
-const { verifyToken } = require('../utils/jwt.util');
-const { ApiResponse } = require('../responses/api.response');
-const { HTTP_STATUS } = require('../constants/http-status');
+const { verifyToken } = require('@/utils/jwt.util');
+const { ApiResponse } = require('@/responses/api.response');
+const { HTTP_STATUS } = require('@/constants/http-status');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 

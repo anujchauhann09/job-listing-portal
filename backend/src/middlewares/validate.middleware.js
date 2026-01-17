@@ -1,6 +1,6 @@
-const AppException = require('../exceptions/app.exception');
-const { HTTP_STATUS } = require('../constants/http-status');
-const { ERROR_MESSAGES } = require('../constants/error-messages');
+const AppException = require('@/exceptions/app.exception');
+const { HTTP_STATUS } = require('@/constants/http-status');
+const { ERROR_MESSAGES } = require('@/constants/error-messages');
 
 const validate = (schema) => (req, res, next) => {
   if (!req.body || Object.keys(req.body).length === 0) {
