@@ -1,5 +1,5 @@
 const AppException = require('../exceptions/app.exception');
-const ApiResponse = require('../responses/api.response');
+const { ApiResponse } = require('../responses/api.response');
 const logger = require('../config/logger');
 const { formatErrorForLog } = require('../utils/log-format.util');
 

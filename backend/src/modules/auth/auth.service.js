@@ -1,12 +1,14 @@
 const prisma = require('../../config/prisma');
 const { hashPassword, comparePassword } = require('../../utils/password.util');
-const { generateAccessToken } = require('../../utils/jwt.util');
+const { generateAccessToken, generateRefreshToken } = require('../../utils/jwt.util');
 const AppException = require('../../exceptions/app.exception');
 const { REFRESH_TOKEN_EXPIRES_IN } = require('../../config/jwt.config');
+const { getExpiryDate } = require("../../utils/time.util");
 
 const {
   AUTH_MESSAGES,
   AUTH_STATUS,
+  USER_TYPES,
   ROLE_IDS
 } = require('./auth.constants');
 
@@ -32,21 +34,45 @@ const registerUser = async ({ email, password, userType }) => {
 
   const hashedPassword = await hashPassword(password);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      roleId
-    },
-    select: {
-      uuid: true,
-      createdAt: true
+  const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        roleId
+      }
+    });
+
+    await tx.userProfile.create({
+      data: {
+        userId: user.id
+      }
+    });
+
+    if (userType === USER_TYPES.JOB_SEEKER) {
+      await tx.jobSeeker.create({
+        data: {
+          userId: user.id
+        }
+      });
     }
+
+    if (userType === USER_TYPES.EMPLOYER) {
+      await tx.employer.create({
+        data: {
+          userId: user.id
+        }
+      });
+    }
+
+    return {
+      uuid: user.uuid,
+      createdAt: user.createdAt
+    };
   });
 
-  return user;
+  return result;
 };
-
 
 const loginUser = async ({ email, password }) => {
   const user = await prisma.user.findUnique({
@@ -90,7 +116,7 @@ const loginUser = async ({ email, password }) => {
     data: {
       token: refreshToken,
       userId: user.id,
-      expiresAt: REFRESH_TOKEN_EXPIRES_IN
+      expiresAt: getExpiryDate(REFRESH_TOKEN_EXPIRES_IN)
     }
   });
 

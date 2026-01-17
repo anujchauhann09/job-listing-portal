@@ -1,13 +1,17 @@
 class ApiResponse {
-  constructor({ status, message, data = null }) {
-    this.success = status >= 200 && status < 300;
+  constructor({ success = true, message = '', data = null }) {
+    this.success = success;
     this.message = message;
     this.data = data;
   }
 
-  send(res, status) {
-    return res.status(status).json(this);
+  send(res, statusCode = 200) {
+    return res.status(statusCode).json({
+      success: this.success,
+      message: this.message,
+      data: this.data
+    });
   }
 }
 
-module.exports = ApiResponse;
+module.exports = { ApiResponse };
