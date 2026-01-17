@@ -1,0 +1,144 @@
+const prisma = require('../../config/prisma');
+const { hashPassword, comparePassword } = require('../../utils/password.util');
+const { generateAccessToken } = require('../../utils/jwt.util');
+const AppException = require('../../exceptions/app.exception');
+const { REFRESH_TOKEN_EXPIRES_IN } = require('../../config/jwt.config');
+
+const {
+  AUTH_MESSAGES,
+  AUTH_STATUS,
+  ROLE_IDS
+} = require('./auth.constants');
+
+const registerUser = async ({ email, password, userType }) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (existingUser) {
+    throw new AppException({
+      status: AUTH_STATUS.CONFLICT,
+      message: AUTH_MESSAGES.EMAIL_EXISTS
+    });
+  }
+
+  const roleId = ROLE_IDS[userType];
+  if (!roleId) {
+    throw new AppException({
+      status: AUTH_STATUS.BAD_REQUEST,
+      message: AUTH_MESSAGES.INVALID_USER_TYPE
+    });
+  }
+
+  const hashedPassword = await hashPassword(password);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      roleId
+    },
+    select: {
+      uuid: true,
+      createdAt: true
+    }
+  });
+
+  return user;
+};
+
+
+const loginUser = async ({ email, password }) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: { role: true }
+  });
+
+  if (!user) {
+    throw new AppException({
+      status: AUTH_STATUS.UNAUTHORIZED,
+      message: AUTH_MESSAGES.INVALID_CREDENTIALS
+    });
+  }
+
+  if (!user.isActive || user.isDeleted) {
+    throw new AppException({
+      status: AUTH_STATUS.FORBIDDEN,
+      message: AUTH_MESSAGES.ACCOUNT_INACTIVE
+    });
+  }
+
+  const isPasswordValid = await comparePassword(password, user.password);
+  if (!isPasswordValid) {
+    throw new AppException({
+      status: AUTH_STATUS.UNAUTHORIZED,
+      message: AUTH_MESSAGES.INVALID_CREDENTIALS
+    });
+  }
+
+  const accessToken = generateAccessToken({
+    sub: user.uuid,
+    roleId: user.roleId
+  });
+
+  const refreshToken = generateRefreshToken({
+    sub: user.uuid,
+    roleId: user.roleId
+  });
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: REFRESH_TOKEN_EXPIRES_IN
+    }
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      uuid: user.uuid,
+      email: user.email,
+      role: user.role.name
+    }
+  };
+};
+
+
+const refreshAccessToken = async (token) => {
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: { token },
+    include: { user: true }
+  });
+
+  if (!storedToken || storedToken.isRevoked || storedToken.expiresAt < new Date()) {
+    throw new AppException({
+      status: AUTH_STATUS.UNAUTHORIZED,
+      message: AUTH_MESSAGES.INVALID_REFRESH_TOKEN
+    });
+  }
+
+  const accessToken = generateAccessToken({
+    sub: storedToken.user.uuid,
+    roleId: storedToken.user.roleId
+  });
+
+  return { accessToken };
+};
+
+
+const logoutUser = async (token) => {
+  await prisma.refreshToken.updateMany({
+    where: { token },
+    data: { isRevoked: true }
+  });
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  logoutUser
+};
+
