@@ -1,8 +1,9 @@
 const express = require("express");
-const healthRoute = require("./health.route");
+const authRoutes = require('../modules/auth/auth.routes');
 
 const router = express.Router();
 
-router.use("/health", healthRoute);
+router.use('/auth', authRoutes);
 
 module.exports = router;
+
