@@ -1,6 +1,8 @@
 const { registerSchema, loginSchema } = require('./auth.validator');
 const authService = require('./auth.service');
 const { ApiResponse } = require('../../responses/api.response');
+const { HTTP_STATUS } = require('../../constants/http-status');
+const { AUTH_MESSAGES } = require('./auth.constants');
 
 const register = async (req, res, next) => {
   try {
@@ -9,9 +11,9 @@ const register = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: 'User registered successfully',
+      message: AUTH_MESSAGES.USER_CREATED,
       data: user
-    }).send(res, 201); 
+    }).send(res, HTTP_STATUS.CREATED); 
   } catch (error) {
     next(error);
   }
@@ -25,9 +27,9 @@ const login = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: 'Login successful',
+      message: AUTH_MESSAGES.LOGIN_SUCCESS,
       data: result
-    }).send(res, 200);
+    }).send(res, HTTP_STATUS.OK);
   } catch (error) {
     next(error);
   }
@@ -40,9 +42,9 @@ const refreshToken = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: 'Token refreshed',
+      message: AUTH_MESSAGES.TOKEN_REFRESHED,
       data: result
-    }).send(res, 200);
+    }).send(res, HTTP_STATUS.OK);
   } catch (err) {
     next(err);
   }
@@ -55,8 +57,8 @@ const logout = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: 'Logged out successfully'
-    }).send(res, 200);
+      message: AUTH_MESSAGES.LOGOUT_SUCCESS,
+    }).send(res, HTTP_STATUS.OK);
   } catch (err) {
     next(err);
   }

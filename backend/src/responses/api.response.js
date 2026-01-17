@@ -1,3 +1,5 @@
+const { HTTP_STATUS } = require('../constants/http-status');
+
 class ApiResponse {
   constructor({ success = true, message = '', data = null }) {
     this.success = success;
@@ -5,7 +7,7 @@ class ApiResponse {
     this.data = data;
   }
 
-  send(res, statusCode = 200) {
+  send(res, statusCode = HTTP_STATUS.OK) {
     return res.status(statusCode).json({
       success: this.success,
       message: this.message,

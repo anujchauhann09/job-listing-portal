@@ -1,18 +1,13 @@
-const AUTH_STATUS = {
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  CONFLICT: 409
-};
-
-
 const AUTH_MESSAGES = {
   USER_CREATED: 'User registered successfully',
+  LOGIN_SUCCESS: 'Logged in successfully',
   EMAIL_EXISTS: 'Email already registered',
   INVALID_USER_TYPE: 'Invalid user type',
 
   INVALID_CREDENTIALS: 'Invalid email or password',
   ACCOUNT_INACTIVE: 'Account is inactive',
+
+  TOKEN_REFRESHED: 'Token refreshed successfully',
 
   INVALID_REFRESH_TOKEN: 'Invalid refresh token',
   TOKEN_EXPIRED: 'Token has expired',
@@ -39,7 +34,6 @@ const TOKEN_TYPES = {
 
 
 module.exports = {
-  AUTH_STATUS,
   AUTH_MESSAGES,
   USER_TYPES,
   ROLE_IDS,

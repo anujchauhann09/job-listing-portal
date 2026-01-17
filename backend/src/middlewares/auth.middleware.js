@@ -1,6 +1,6 @@
 const { verifyToken } = require('../utils/jwt.util');
 const { ApiResponse } = require('../responses/api.response');
-
+const { HTTP_STATUS } = require('../constants/http-status');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -16,7 +16,7 @@ const authenticate = (req, res, next) => {
       return new ApiResponse({
         success: false,
         message: 'Authentication token missing or invalid'
-      }).send(res, 401);
+      }).send(res, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const token = authHeader.split(' ')[1];
@@ -32,7 +32,7 @@ const authenticate = (req, res, next) => {
     return new ApiResponse({
       success : false,
       message: 'Invalid or expired token'
-    }).send(res, 401);
+    }).send(res, HTTP_STATUS.UNAUTHORIZED);
   }     
 };
 

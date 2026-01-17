@@ -5,9 +5,9 @@ const AppException = require('../../exceptions/app.exception');
 const { REFRESH_TOKEN_EXPIRES_IN } = require('../../config/jwt.config');
 const { getExpiryDate } = require("../../utils/time.util");
 
+const { HTTP_STATUS } = require('../../constants/http-status');
 const {
   AUTH_MESSAGES,
-  AUTH_STATUS,
   USER_TYPES,
   ROLE_IDS
 } = require('./auth.constants');
@@ -19,7 +19,7 @@ const registerUser = async ({ email, password, userType }) => {
 
   if (existingUser) {
     throw new AppException({
-      status: AUTH_STATUS.CONFLICT,
+      status: HTTP_STATUS.CONFLICT,
       message: AUTH_MESSAGES.EMAIL_EXISTS
     });
   }
@@ -27,7 +27,7 @@ const registerUser = async ({ email, password, userType }) => {
   const roleId = ROLE_IDS[userType];
   if (!roleId) {
     throw new AppException({
-      status: AUTH_STATUS.BAD_REQUEST,
+      status: HTTP_STATUS.BAD_REQUEST,
       message: AUTH_MESSAGES.INVALID_USER_TYPE
     });
   }
@@ -82,14 +82,14 @@ const loginUser = async ({ email, password }) => {
 
   if (!user) {
     throw new AppException({
-      status: AUTH_STATUS.UNAUTHORIZED,
+      status: HTTP_STATUS.UNAUTHORIZED,
       message: AUTH_MESSAGES.INVALID_CREDENTIALS
     });
   }
 
   if (!user.isActive || user.isDeleted) {
     throw new AppException({
-      status: AUTH_STATUS.FORBIDDEN,
+      status: HTTP_STATUS.FORBIDDEN,
       message: AUTH_MESSAGES.ACCOUNT_INACTIVE
     });
   }
@@ -97,7 +97,7 @@ const loginUser = async ({ email, password }) => {
   const isPasswordValid = await comparePassword(password, user.password);
   if (!isPasswordValid) {
     throw new AppException({
-      status: AUTH_STATUS.UNAUTHORIZED,
+      status: HTTP_STATUS.UNAUTHORIZED,
       message: AUTH_MESSAGES.INVALID_CREDENTIALS
     });
   }
@@ -140,7 +140,7 @@ const refreshAccessToken = async (token) => {
 
   if (!storedToken || storedToken.isRevoked || storedToken.expiresAt < new Date()) {
     throw new AppException({
-      status: AUTH_STATUS.UNAUTHORIZED,
+      status: HTTP_STATUS.UNAUTHORIZED,
       message: AUTH_MESSAGES.INVALID_REFRESH_TOKEN
     });
   }
