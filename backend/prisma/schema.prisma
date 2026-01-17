@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  users     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  uuid      String  @unique @default(uuid())
+  email     String  @unique
+  password  String
+  roleId    Int
+  role      Role    @relation(fields: [roleId], references: [id])
+
+  isActive  Boolean @default(true)
+  isDeleted Boolean @default(false)
+
+  profile   UserProfile?
+  employer  Employer?
+  jobSeeker JobSeeker?
+
+  refreshTokens RefreshToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roleId])
+  @@index([isActive, isDeleted])
+}
+
+model UserProfile {
+  id        Int    @id @default(autoincrement())
+  uuid      String @unique @default(uuid())
+  userId    Int    @unique
+  user      User   @relation(fields: [userId], references: [id])
+
+  name      String
+  bio       String?
+  phone     String?
+  avatarUrl String?
+
+  isDeleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Employer {
+  id                  Int    @id @default(autoincrement())
+  uuid                String @unique @default(uuid())
+  userId              Int    @unique
+  user                User   @relation(fields: [userId], references: [id])
+
+  companyName         String
+  companyDescription  String?
+  companySize         Int?
+  industry            String?
+  website             String?
+  companyLogoUrl      String?
+  headquartersCity    String?
+  headquartersCountry String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model JobSeeker {
+  id              Int    @id @default(autoincrement())
+  uuid            String @unique @default(uuid())
+  userId          Int    @unique
+  user            User   @relation(fields: [userId], references: [id])
+
+  resumeUrl       String?
+  experienceYears Int?
+  currentTitle    String?
+  currentLocation String?
+  expectedSalary  Decimal?
+  noticePeriodDays Int?
+
+  skills          JobSeekerSkill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Skill {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  jobSeekers JobSeekerSkill[]
+}
+
+model JobSeekerSkill {
+  jobSeekerId Int
+  skillId     Int
+
+  jobSeeker JobSeeker @relation(fields: [jobSeekerId], references: [id])
+  skill     Skill     @relation(fields: [skillId], references: [id])
+
+  @@id([jobSeekerId, skillId])
+  @@index([jobSeekerId])
+  @@index([skillId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
