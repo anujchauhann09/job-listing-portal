@@ -19,15 +19,11 @@ export const validateLoginForm = ({ email, password }) => {
     }
   }
 
-  if (!role) {
-    errors.role = 'User role is required';
-  }
-
   return errors;
 };
 
 
-export const validateRegistrationForm = ({ email, password, role }) => {
+export const validateRegistrationForm = ({ email, password, userType }) => {
   const errors = {};
 
   if (!email?.trim()) {
@@ -46,7 +42,7 @@ export const validateRegistrationForm = ({ email, password, role }) => {
     }
   }
 
-  if (!role) {
+  if (!userType) {
     errors.role = 'User role is required';
   }
 

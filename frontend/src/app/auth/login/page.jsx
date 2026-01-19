@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Mail,
@@ -14,37 +14,60 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub, FaLinkedinIn } from 'react-icons/fa';
 import { validateLoginForm } from '@/utils/validators/auth.validators';
+import { loginUser } from '@/services/auth.service';
 
 import { USER_ROLE } from '@/constants';
 
 const Login = () => {
   const [role, setRole] = useState(USER_ROLE.JOB_SEEKER);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleFormSubmit = useCallback(async (e) => {
     e.preventDefault();
-
-    const validationErrors = validateLoginForm({
+    
+    const formData = {
       email,
       password,
-    });
+      userType: role,
+    };
+    
+    try {
+      const validationErrors = validateLoginForm(formData);
+      
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+      setErrors({});
+      setIsLoading(true);
+  
+        const response = await loginUser(formData);
+  
+        if (response.success) {
+          const { accessToken, refreshToken, user } = response.data;
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+          localStorage.setItem('user', JSON.stringify(user));
 
-    setErrors({});
-
-    console.log('Login payload:', {
-      email,
-      password,
-      role,
-    });
-  };
+          window.location.href = '/';
+        } else {
+          alert(response.message);
+        }
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || 'Login failed';
+        alert(message);
+      } finally {
+        setIsLoading(false);
+      }
+    }, [email, password, role]);
+  
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex bg-white">
@@ -197,7 +220,7 @@ const Login = () => {
                 aria-label="Sign up with GitHub"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
-                <FaGithub size={18} />
+                <FaGithub size={18} color="black" />
               </button>
             </div>
           </div>
@@ -210,7 +233,7 @@ const Login = () => {
             <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleFormSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 ml-1">
                 Email Address
@@ -290,7 +313,7 @@ const Login = () => {
             </div>
 
             <button className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center group">
-              Sign In to Employrix
+              {isLoading ? 'Signing in...' : 'Sign In to Employrix'}
               <ArrowRight
                 size={18}
                 className="ml-2 group-hover:translate-x-1 transition-transform"

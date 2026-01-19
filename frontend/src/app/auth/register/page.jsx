@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Mail,
@@ -13,39 +13,54 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub, FaLinkedinIn } from 'react-icons/fa';
 import { validateRegistrationForm } from '@/utils/validators/auth.validators';
+import { registerUser } from '@/services/auth.service';
+
 
 import { USER_ROLE } from '@/constants';
 
 const Register = () => {
   const [role, setRole] = useState(USER_ROLE.JOB_SEEKER);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleFormSubmit = useCallback(async (e) => {
     e.preventDefault();
 
-    const validationErrors = validateRegistrationForm({
+    const formData = {
       email,
       password,
-      role,
-    });
+      userType: role,
+    };
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+    try {
+      const validationErrors = validateRegistrationForm(formData);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+      setErrors({});
+      setIsLoading(true); 
+
+      const response = await registerUser(formData);
+
+      if (response.success) {
+        window.location.href = '/auth/login';
+      } else {
+        alert(response.message);
+      }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || 'Registration failed';
+      alert(message);
+    } finally {
+      setIsLoading(false);
     }
-
-    setErrors({});
-
-    console.log('Register payload:', {
-      email,
-      password,
-      role,
-    });
-  };
+  }, [email, password, role]);
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex bg-white">
@@ -128,7 +143,7 @@ const Register = () => {
             <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={handleFormSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 ml-1">
                 Email Address
@@ -187,8 +202,12 @@ const Register = () => {
               )}
             </div>
 
-            <button className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 flex items-center justify-center">
-              Create Account
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 flex items-center justify-center"
+            >
+              {isLoading ? 'Creating...' : 'Create Account'}
               <ArrowRight size={18} className="ml-2" />
             </button>
           </form>
@@ -239,32 +258,5 @@ const Register = () => {
     </div>
   );
 };
-
-const Input = ({ label, icon, value, onChange, placeholder }) => (
-  <div className="space-y-2">
-    <label className="text-sm font-bold text-slate-700 ml-1">{label}</label>
-    <div className="relative">
-      <div className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-        {icon}
-      </div>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl"
-      />
-    </div>
-  </div>
-);
-
-const PasswordInput = ({ value, onChange, show, toggle }) => (
-  <Input
-    label="Password"
-    icon={<Lock size={18} />}
-    value={value}
-    onChange={onChange}
-    placeholder="••••••••"
-  />
-);
 
 export default Register;

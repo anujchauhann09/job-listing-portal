@@ -1,8 +1,8 @@
 export const APP_NAME = 'JobConnect';
 
 export const USER_ROLE = {
-  JOB_SEEKER: 'jobseeker',
-  EMPLOYER: 'employer',
+  JOB_SEEKER: 'JOB_SEEKER',
+  EMPLOYER: 'EMPLOYER',
 };
 
 export const API_ENDPOINTS = {
