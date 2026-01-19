@@ -93,7 +93,7 @@ npm install
 ### 2. Environment Variables
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 ```
 
 ---
@@ -171,4 +171,3 @@ This ensures:
 - Move business logic to services/ or utils/
 - Avoid hard-coding API URLs
 - Prefer reusable components over page-specific logic
-
