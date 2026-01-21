@@ -3,6 +3,7 @@ const authService = require('./auth.service');
 const { ApiResponse } = require('@/responses/api.response');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { AUTH_MESSAGES } = require('./auth.constants');
+const { setAuthCookies, clearAuthCookies } = require('@/utils/authCookies.util');
 
 const register = async (req, res, next) => {
   try {
@@ -25,6 +26,8 @@ const login = async (req, res, next) => {
     const validatedData = loginSchema.parse(req.body);
     const result = await authService.loginUser(validatedData);
 
+    setAuthCookies(res, result);
+
     return new ApiResponse({
       success: true,
       message: AUTH_MESSAGES.LOGIN_SUCCESS,
@@ -38,12 +41,17 @@ const login = async (req, res, next) => {
 const refreshToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
-    const result = await authService.refreshAccessToken(refreshToken);
+    const { accessToken } = await authService.refreshAccessToken(refreshToken);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+    });
 
     return new ApiResponse({
       success: true,
       message: AUTH_MESSAGES.TOKEN_REFRESHED,
-      data: result
+      data: accessToken
     }).send(res, HTTP_STATUS.OK);
   } catch (err) {
     next(err);
@@ -54,6 +62,8 @@ const logout = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
     await authService.logoutUser(refreshToken);
+
+    clearAuthCookies(res);
 
     return new ApiResponse({
       success: true,

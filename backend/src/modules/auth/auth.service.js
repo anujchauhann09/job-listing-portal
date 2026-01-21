@@ -12,7 +12,7 @@ const {
   ROLE_IDS
 } = require('./auth.constants');
 
-const registerUser = async ({ email, password, userType }) => {
+const registerUser = async ({ name, email, password, userType }) => {
   const existingUser = await prisma.user.findUnique({
     where: { email }
   });
@@ -45,7 +45,8 @@ const registerUser = async ({ email, password, userType }) => {
 
     await tx.userProfile.create({
       data: {
-        userId: user.id
+        userId: user.id,
+        name: name.trim()
       }
     });
 
@@ -55,9 +56,7 @@ const registerUser = async ({ email, password, userType }) => {
           userId: user.id
         }
       });
-    }
-
-    if (userType === USER_TYPES.EMPLOYER) {
+    } else if (userType === USER_TYPES.EMPLOYER) {
       await tx.employer.create({
         data: {
           userId: user.id
@@ -77,7 +76,10 @@ const registerUser = async ({ email, password, userType }) => {
 const loginUser = async ({ email, password }) => {
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { role: true }
+    include: {
+      role: true,
+      profile: true   
+    }
   });
 
   if (!user) {
@@ -126,6 +128,7 @@ const loginUser = async ({ email, password }) => {
     user: {
       uuid: user.uuid,
       email: user.email,
+      name: user.profile.name,
       role: user.role.name
     }
   };
