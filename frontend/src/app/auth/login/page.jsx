@@ -199,29 +199,29 @@ const Login = () => {
             </p>
 
             <div className="flex items-center justify-center gap-4">
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/google?role=${role}`}
                 aria-label="Sign up with Google"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 <FcGoogle size={22} />
-              </button>
+              </Link>
 
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/linkedin?role=${role}`}
                 aria-label="Sign up with LinkedIn"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 <FaLinkedinIn size={18} className="text-[#0A66C2]" />
-              </button>
+              </Link>
 
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/github?role=${role}`}
                 aria-label="Sign up with GitHub"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 <FaGithub size={18} color="black" />
-              </button>
+              </Link>
             </div>
           </div>
 

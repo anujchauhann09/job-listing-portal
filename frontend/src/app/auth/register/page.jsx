@@ -1,66 +1,70 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import Link from 'next/link';
+import React, { useState, useCallback } from "react";
+import Link from "next/link";
 import {
   Mail,
   Lock,
   CheckCircle2,
   Eye,
   EyeOff,
-  ArrowRight
-} from 'lucide-react';
-import { FcGoogle } from 'react-icons/fc';
-import { FaGithub, FaLinkedinIn } from 'react-icons/fa';
-import { validateRegistrationForm } from '@/utils/validators/auth.validators';
-import { registerUser } from '@/services/auth.service';
+  ArrowRight,
+  User,
+} from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import { validateRegistrationForm } from "@/utils/validators/auth.validators";
+import { registerUser } from "@/services/auth.service";
 
-
-import { USER_ROLE } from '@/constants';
+import { USER_ROLE } from "@/constants";
 
 const Register = () => {
   const [role, setRole] = useState(USER_ROLE.JOB_SEEKER);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
 
-  const handleFormSubmit = useCallback(async (e) => {
-    e.preventDefault();
+  const handleFormSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    const formData = {
-      email,
-      password,
-      userType: role,
-    };
+      const formData = {
+        name,
+        email,
+        password,
+        userType: role,
+      };
 
-    try {
-      const validationErrors = validateRegistrationForm(formData);
+      try {
+        const validationErrors = validateRegistrationForm(formData);
 
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          return;
+        }
+        setErrors({});
+        setIsLoading(true);
+
+        const response = await registerUser(formData);
+
+        if (response.success) {
+          window.location.href = "/auth/login";
+        } else {
+          alert(response.message);
+        }
+      } catch (error) {
+        const message = error?.response?.data?.message || "Registration failed";
+        alert(message);
+      } finally {
+        setIsLoading(false);
       }
-      setErrors({});
-      setIsLoading(true); 
-
-      const response = await registerUser(formData);
-
-      if (response.success) {
-        window.location.href = '/auth/login';
-      } else {
-        alert(response.message);
-      }
-    } catch (error) {
-      const message =
-        error?.response?.data?.message || 'Registration failed';
-      alert(message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [email, password, role]);
+    },
+    [name, email, password, role],
+  );
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex bg-white">
@@ -78,8 +82,8 @@ const Register = () => {
               onClick={() => setRole(USER_ROLE.JOB_SEEKER)}
               className={`flex-1 py-3 text-sm font-bold rounded-xl relative z-10 ${
                 role === USER_ROLE.JOB_SEEKER
-                  ? 'text-indigo-600'
-                  : 'text-slate-500'
+                  ? "text-indigo-600"
+                  : "text-slate-500"
               }`}
             >
               Job Seeker
@@ -88,8 +92,8 @@ const Register = () => {
               onClick={() => setRole(USER_ROLE.EMPLOYER)}
               className={`flex-1 py-3 text-sm font-bold rounded-xl relative z-10 ${
                 role === USER_ROLE.EMPLOYER
-                  ? 'text-indigo-600'
-                  : 'text-slate-500'
+                  ? "text-indigo-600"
+                  : "text-slate-500"
               }`}
             >
               Employer
@@ -97,8 +101,8 @@ const Register = () => {
             <div
               className={`absolute top-1.5 left-1.5 h-[calc(100%-12px)] w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-transform ${
                 role === USER_ROLE.EMPLOYER
-                  ? 'translate-x-full'
-                  : 'translate-x-0'
+                  ? "translate-x-full"
+                  : "translate-x-0"
               }`}
             />
           </div>
@@ -107,31 +111,31 @@ const Register = () => {
             <p className="text-sm font-semibold text-slate-600 mb-3 text-center">
               Sign in with
             </p>
-
+            
             <div className="flex items-center justify-center gap-4">
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/google?role=${role}`}
                 aria-label="Sign up with Google"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 <FcGoogle size={22} />
-              </button>
+              </Link>
 
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/linkedin?role=${role}`}
                 aria-label="Sign up with LinkedIn"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 <FaLinkedinIn size={18} className="text-[#0A66C2]" />
-              </button>
+              </Link>
 
-              <button
-                type="button"
+              <Link
+                href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/oauth/github?role=${role}`}
                 aria-label="Sign up with GitHub"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
-                <FaGithub size={18} />
-              </button>
+                <FaGithub size={18} color="black" />
+              </Link>
             </div>
           </div>
 
@@ -144,6 +148,34 @@ const Register = () => {
           </div>
 
           <form className="space-y-5" onSubmit={handleFormSubmit}>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">
+                Full Name
+              </label>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <User size={18} />
+                </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={
+                    role === USER_ROLE.JOB_SEEKER
+                      ? "Your full name"
+                      : "Your company name"
+                  }
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-900"
+                  required
+                />
+              </div>
+
+              {errors.name && (
+                <p className="text-xs text-red-500 ml-1">{errors.name}</p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 ml-1">
                 Email Address
@@ -207,13 +239,13 @@ const Register = () => {
               disabled={isLoading}
               className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 flex items-center justify-center"
             >
-              {isLoading ? 'Creating...' : 'Create Account'}
+              {isLoading ? "Creating..." : "Create Account"}
               <ArrowRight size={18} className="ml-2" />
             </button>
           </form>
 
           <p className="mt-10 text-center text-slate-500 font-medium">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               href="/auth/login"
               className="text-indigo-600 font-bold hover:underline"
@@ -243,9 +275,9 @@ const Register = () => {
 
           <ul className="space-y-4">
             {[
-              'Access to non-public job listings',
-              'Advanced resume optimization tools',
-              'Verified employer badges for security'
+              "Access to non-public job listings",
+              "Advanced resume optimization tools",
+              "Verified employer badges for security",
             ].map((text) => (
               <li key={text} className="flex items-center space-x-3">
                 <CheckCircle2 className="text-teal-600" size={18} />

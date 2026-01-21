@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Briefcase, Menu, X } from "lucide-react";
+import { getUserFromCookie } from "@/utils/auth/auth.util";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,16 +15,22 @@ const Navbar = () => {
     pathname === "/auth/login" || pathname === "/auth/register";
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const cookieUser = getUserFromCookie();
+    if (cookieUser) {
+      setUser(cookieUser);
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+  const getDisplayName = () => {
+    if (!user) return "";
+    return user.name || user.email;
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/v1/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
 
     setUser(null);
     window.location.href = "/auth/login";
@@ -57,7 +64,7 @@ const Navbar = () => {
               {user ? (
                 <>
                   <span className="text-sm font-medium text-slate-700">
-                    {user.email}
+                    {getDisplayName()}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -126,7 +133,7 @@ const Navbar = () => {
                   <div className="px-3 py-2 rounded-lg bg-slate-50 text-sm text-slate-600">
                     Signed in as
                     <div className="font-medium text-slate-800 truncate">
-                      {user.email}
+                      {getDisplayName()}
                     </div>
                   </div>
 
