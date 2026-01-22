@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Briefcase, Menu, X } from "lucide-react";
-import { getUserFromCookie } from "@/utils/auth/auth.util";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,11 +14,30 @@ const Navbar = () => {
     pathname === "/auth/login" || pathname === "/auth/register";
 
   useEffect(() => {
-    const cookieUser = getUserFromCookie();
-    if (cookieUser) {
-      setUser(cookieUser);
-    }
-  }, []);
+  if (isAuthPage) {
+    setUser(null);
+    return;
+  }
+
+  fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
+    credentials: "include",
+  })
+    .then((res) => {
+      if (res.status === 401) return null; 
+      return res.json();
+    })
+    .then((data) => {
+      if (data?.data) {
+        setUser(data.data);
+      } else {
+        setUser(null);
+      }
+    })
+    .catch(() => {
+      setUser(null);
+    });
+}, [isAuthPage]);
+
 
   const getDisplayName = () => {
     if (!user) return "";
@@ -27,7 +45,7 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
-    await fetch("/api/v1/auth/logout", {
+    await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

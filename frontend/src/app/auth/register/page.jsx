@@ -161,11 +161,7 @@ const Register = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={
-                    role === USER_ROLE.JOB_SEEKER
-                      ? "Your full name"
-                      : "Your company name"
-                  }
+                  placeholder="Your full name"
                   className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-900"
                   required
                 />

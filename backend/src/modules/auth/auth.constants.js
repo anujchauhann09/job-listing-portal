@@ -11,7 +11,9 @@ const AUTH_MESSAGES = {
 
   INVALID_REFRESH_TOKEN: 'Invalid refresh token',
   TOKEN_EXPIRED: 'Token has expired',
-  LOGOUT_SUCCESS: 'Logged out successfully'
+  LOGOUT_SUCCESS: 'Logged out successfully',
+
+  ME_FETCHED: 'User information fetched successfully'
 };
 
 

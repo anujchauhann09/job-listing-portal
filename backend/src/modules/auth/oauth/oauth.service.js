@@ -184,13 +184,7 @@ const handleOAuthCallback = async (provider, query) => {
 
   return {
     accessToken,
-    refreshToken,
-    user: {
-      uuid: user.uuid,
-      email: user.email,
-      name: user.profile?.name || null,
-      role: user.role.name,
-    },
+    refreshToken
   };
 };
 

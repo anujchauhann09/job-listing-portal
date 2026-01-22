@@ -4,7 +4,8 @@ const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Unauthorized',
   FORBIDDEN: 'Forbidden',
   NOT_FOUND: 'Resource not found',
-  VALIDATION_FAILED: 'Validation failed'
+  VALIDATION_FAILED: 'Validation failed',
+  AUTHENTICATION_FAILED: 'Authentication token is missing or invalid'
 };
 
 module.exports = { ERROR_MESSAGES };

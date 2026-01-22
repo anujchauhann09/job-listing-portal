@@ -72,7 +72,7 @@ model Employer {
   userId              Int    @unique
   user                User   @relation(fields: [userId], references: [id])
 
-  companyName         String
+  companyName         String?
   companyDescription  String?
   companySize         Int?
   industry            String?

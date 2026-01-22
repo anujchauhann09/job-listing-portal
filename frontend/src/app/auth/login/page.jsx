@@ -49,12 +49,6 @@ const Login = () => {
         const response = await loginUser(formData);
   
         if (response.success) {
-          const { accessToken, refreshToken, user } = response.data;
-
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
-          localStorage.setItem('user', JSON.stringify(user));
-
           window.location.href = '/';
         } else {
           alert(response.message);

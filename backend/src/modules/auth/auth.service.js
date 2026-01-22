@@ -124,13 +124,7 @@ const loginUser = async ({ email, password }) => {
 
   return {
     accessToken,
-    refreshToken,
-    user: {
-      uuid: user.uuid,
-      email: user.email,
-      name: user.profile.name,
-      role: user.role.name
-    }
+    refreshToken
   };
 };
 
@@ -158,16 +152,36 @@ const refreshAccessToken = async (token) => {
 
 
 const logoutUser = async (token) => {
+  if (!token) return;
+
   await prisma.refreshToken.updateMany({
     where: { token },
     data: { isRevoked: true }
   });
 };
 
+const me = async (uuid) => {
+  const user = await prisma.user.findUnique({
+    where: { uuid },
+    include: {
+      role: true,
+      profile: true,
+    },
+  });
+
+  return {
+    uuid: user.uuid,
+    email: user.email,
+    name: user.profile?.name || null,
+    role: user.role.name,
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   refreshAccessToken,
-  logoutUser
+  logoutUser,
+  me
 };
 

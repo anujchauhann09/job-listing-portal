@@ -1,41 +1,15 @@
-const { verifyToken } = require('@/utils/jwt.util');
-const { ApiResponse } = require('@/responses/api.response');
-const { HTTP_STATUS } = require('@/constants/http-status');
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined');
-}
+const { verifyToken } = require("../utils/jwt.util");
+const { AppException } = require("../exceptions/app.exception");
+const { HTTP_STATUS } = require("../constants/http-status");
+const { ERROR_MESSAGES } = require("../constants/error-messages");
 
 const authenticate = (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
+  const token = req.cookies.accessToken;
+  if (!token) throw new AppException({ status: HTTP_STATUS.UNAUTHORIZED, message: ERROR_MESSAGES.AUTHENTICATION_FAILED });
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new ApiResponse({
-        success: false,
-        message: 'Authentication token missing or invalid'
-      }).send(res, HTTP_STATUS.UNAUTHORIZED);
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-
-    req.user = {
-      uuid: decoded.sub,
-      roleId: decoded.roleId
-    };
-
-    next();
-  } catch (error) {
-    return new ApiResponse({
-      success : false,
-      message: 'Invalid or expired token'
-    }).send(res, HTTP_STATUS.UNAUTHORIZED);
-  }     
+  const payload = verifyToken(token);
+  req.user = payload;
+  next();
 };
 
-module.exports = {
-  authenticate
-};
+module.exports = { authenticate };

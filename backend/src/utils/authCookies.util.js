@@ -1,31 +1,28 @@
-const setAuthCookies = (res, { accessToken, refreshToken, user }) => {
-  const isProd = process.env.NODE_ENV === "production";
+const tokenCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/",
+};
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-  });
+const userCookieOptions = {
+  httpOnly: false, 
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/",
+};
 
-  if (refreshToken) {
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-    });
-  }
+const setAuthCookies = (res, { accessToken, refreshToken }) => {
+  res.cookie("accessToken", accessToken, tokenCookieOptions);
+  res.cookie("refreshToken", refreshToken, tokenCookieOptions);
 
-  res.cookie("user", JSON.stringify(user), {
-    httpOnly: false,
-    secure: isProd,
-    sameSite: "lax",
-  });
+  // res.cookie("user", JSON.stringify(user), userCookieOptions);
 };
 
 const clearAuthCookies = (res) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
-  res.clearCookie("user");
+  res.clearCookie("accessToken", tokenCookieOptions);
+  res.clearCookie("refreshToken", tokenCookieOptions);
+  // res.clearCookie("user", userCookieOptions);
 };
 
 module.exports = {
