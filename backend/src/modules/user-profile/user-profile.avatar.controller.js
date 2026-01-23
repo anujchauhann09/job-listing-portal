@@ -1,6 +1,6 @@
 const path = require('path');
 
-const avatarService = require('./user-profile.avatar.services');
+const avatarService = require('./user-profile.avatar.service');
 const { ApiResponse } = require('@/responses/api.response');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const AppException = require('@/exceptions/app.exception');

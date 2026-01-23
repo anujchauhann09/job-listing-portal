@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const userProfileRepository = require('./user-profile.repositories');
+const userProfileRepository = require('./user-profile.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { USER_PROFILE_MESSAGES, AVATAR_MESSAGES } = require('./user-profile.constants');

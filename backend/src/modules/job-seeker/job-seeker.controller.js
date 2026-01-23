@@ -1,4 +1,4 @@
-const jobSeekerService = require('./job-seeker.services');
+const jobSeekerService = require('./job-seeker.service');
 const jobSeekerValidator = require('./job-seeker.validators');
 
 const { ApiResponse } = require('@/responses/api.response');

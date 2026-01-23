@@ -1,4 +1,4 @@
-const employerService = require('./employer.services');
+const employerService = require('./employer.service');
 const employerValidator = require('./employer.validators');
 
 const { ApiResponse } = require('@/responses/api.response');

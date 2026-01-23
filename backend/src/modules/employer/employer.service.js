@@ -1,4 +1,4 @@
-const employerRepository = require('./employer.repositories');
+const employerRepository = require('./employer.repository');
 
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');

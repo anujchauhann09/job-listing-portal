@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const employerRepository = require('./employer.repositories');
+const employerRepository = require('./employer.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { EMPLOYER_MESSAGES } = require('./employer.constants');

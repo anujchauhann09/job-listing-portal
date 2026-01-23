@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const jobSeekerRepository = require('./job-seeker.repositories');
+const jobSeekerRepository = require('./job-seeker.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { JOB_SEEKER_MESSAGES, RESUME_MESSAGES } = require('./job-seeker.constants');

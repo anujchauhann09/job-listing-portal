@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { authenticate } = require('@/middlewares/auth.middleware');
 const { uploadAvatar } = require('@/modules/file/file.avatar.middleware');
-const avatarController = require('./user-profile.avatar.controllers');
+const avatarController = require('./user-profile.avatar.controller');
 
 router.use(authenticate);
 

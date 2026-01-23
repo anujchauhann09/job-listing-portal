@@ -1,6 +1,6 @@
 const path = require('path');
 
-const employerLogoService = require('./employer.logo.services');
+const employerLogoService = require('./employer.logo.service');
 const { ApiResponse } = require('@/responses/api.response');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { EMPLOYER_MESSAGES } = require('./employer.constants');

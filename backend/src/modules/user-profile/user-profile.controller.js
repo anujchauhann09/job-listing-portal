@@ -1,4 +1,4 @@
-const userProfileService = require('./user-profile.services');
+const userProfileService = require('./user-profile.service');
 const userProfileValidator = require('./user-profile.validators');
 
 const { ApiResponse } = require('@/responses/api.response');

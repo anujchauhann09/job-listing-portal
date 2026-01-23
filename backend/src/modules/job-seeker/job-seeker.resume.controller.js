@@ -1,6 +1,6 @@
 const path = require('path');
 
-const resumeService = require('./job-seeker.resume.services');
+const resumeService = require('./job-seeker.resume.service');
 const { ApiResponse } = require('@/responses/api.response');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { RESUME_MESSAGES } = require('./job-seeker.constants');

@@ -1,4 +1,4 @@
-const oauthService = require('./oauth.services');
+const oauthService = require('./oauth.service');
 const { setAuthCookies } = require('@/utils/authCookies.util');
 
 const redirectToProvider = async (req, res, next) => {

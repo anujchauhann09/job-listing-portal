@@ -1,4 +1,4 @@
-const userProfileRepository = require('./user-profile.repositories');
+const userProfileRepository = require('./user-profile.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { USER_PROFILE_MESSAGES } = require('./user-profile.constants');

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const employerController = require('./employer.controllers');
+const employerController = require('./employer.controller');
 const { authenticate, authorize } = require('@/middlewares/auth.middleware');
 
 router.use(authenticate);

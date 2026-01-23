@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { authenticate, authorize } = require('@/middlewares/auth.middleware');
 
-const resumeController = require('./job-seeker.resume.controllers');
+const resumeController = require('./job-seeker.resume.controller');
 const { uploadResume } = require('@/modules/file/file.middleware');
 
 router.use(authenticate);

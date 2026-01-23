@@ -1,5 +1,5 @@
 const { registerSchema, loginSchema } = require("./auth.validators");
-const authService = require("./auth.services");
+const authService = require("./auth.service");
 const { ApiResponse } = require("@/responses/api.response");
 const { HTTP_STATUS } = require("@/constants/http-status");
 const { AUTH_MESSAGES } = require("./auth.constants");
