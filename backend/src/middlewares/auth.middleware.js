@@ -1,7 +1,7 @@
-const { verifyToken } = require("../utils/jwt.util");
-const { AppException } = require("../exceptions/app.exception");
-const { HTTP_STATUS } = require("../constants/http-status");
-const { ERROR_MESSAGES } = require("../constants/error-messages");
+const { verifyToken } = require("@/utils/jwt.util");
+const { AppException } = require("@/exceptions/app.exception");
+const { HTTP_STATUS } = require("@/constants/http-status");
+const { ERROR_MESSAGES } = require("@/constants/error-messages");
 
 const authenticate = (req, res, next) => {
   const token = req.cookies.accessToken;
@@ -12,4 +12,21 @@ const authenticate = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate };
+const authorize = (allowedRoles = []) => {
+  return (req, res, next) => {
+    const userRole = req.user?.role?.name;
+
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return next(
+        new AppException(
+          'You are not authorized to access this resource',
+          HTTP_STATUS.FORBIDDEN
+        )
+      );
+    }
+
+    next();
+  };
+};
+
+module.exports = { authenticate, authorize };

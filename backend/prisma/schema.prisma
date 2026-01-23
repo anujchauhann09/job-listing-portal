@@ -72,7 +72,7 @@ model Employer {
   userId              Int    @unique
   user                User   @relation(fields: [userId], references: [id])
 
-  companyName         String?
+  companyName         String
   companyDescription  String?
   companySize         Int?
   industry            String?
@@ -80,6 +80,8 @@ model Employer {
   companyLogoUrl      String?
   headquartersCity    String?
   headquartersCountry String?
+
+  isDeleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,15 +99,19 @@ model JobSeeker {
   experienceYears Int?
   currentTitle    String?
   currentLocation String?
-  expectedSalary  Decimal?
+  expectedSalary Decimal? @db.Decimal(12,2)
   noticePeriodDays Int?
 
   skills          JobSeekerSkill[]
+
+  isDeleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([currentLocation])
+  @@index([experienceYears])
 }
 
 model Skill {
