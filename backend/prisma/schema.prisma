@@ -58,8 +58,6 @@ model UserProfile {
   phone     String?
   avatarUrl String?
 
-  isDeleted Boolean @default(false)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -80,8 +78,6 @@ model Employer {
   companyLogoUrl      String?
   headquartersCity    String?
   headquartersCountry String?
-
-  isDeleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,8 +100,6 @@ model JobSeeker {
 
   skills          JobSeekerSkill[]
 
-  isDeleted Boolean @default(false)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -118,12 +112,18 @@ model Skill {
   id    Int    @id @default(autoincrement())
   name  String @unique
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   jobSeekers JobSeekerSkill[]
 }
 
 model JobSeekerSkill {
   jobSeekerId Int
   skillId     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   jobSeeker JobSeeker @relation(fields: [jobSeekerId], references: [id])
   skill     Skill     @relation(fields: [skillId], references: [id])
