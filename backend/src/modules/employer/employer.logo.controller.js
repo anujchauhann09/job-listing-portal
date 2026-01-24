@@ -1,14 +1,18 @@
 const path = require('path');
 
 const employerLogoService = require('./employer.logo.service');
+const AppException = require('@/exceptions/app.exception');
 const { ApiResponse } = require('@/responses/api.response');
 const { HTTP_STATUS } = require('@/constants/http-status');
-const { EMPLOYER_MESSAGES } = require('./employer.constants');
+const { LOGO_MESSAGES } = require('./employer.constants');
 
 const uploadLogo = async (req, res, next) => {
   try {
     if (!req.file) {
-      throw new Error('Logo file is required');
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: LOGO_MESSAGES.LOGO_REQUIRED
+      });
     }
 
     const result = await employerLogoService.uploadLogo(
@@ -18,7 +22,7 @@ const uploadLogo = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: EMPLOYER_MESSAGES.LOGO_UPLOADED,
+      message: LOGO_MESSAGES.LOGO_UPLOADED,
       data: result
     }).send(res, HTTP_STATUS.OK);
   } catch (err) {
@@ -57,7 +61,7 @@ const deleteLogo = async (req, res, next) => {
 
     return new ApiResponse({
       success: true,
-      message: EMPLOYER_MESSAGES.LOGO_DELETED
+      message: LOGO_MESSAGES.LOGO_DELETED
     }).send(res, HTTP_STATUS.OK);
   } catch (err) {
     next(err);

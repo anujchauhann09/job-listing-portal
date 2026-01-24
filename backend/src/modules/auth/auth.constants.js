@@ -28,16 +28,21 @@ const ROLE_IDS = {
   EMPLOYER: 3
 };
 
-
 const TOKEN_TYPES = {
   ACCESS: 'ACCESS',
   REFRESH: 'REFRESH'
 };
 
+const ROLES = {
+  1: 'ADMIN',
+  2: 'JOB_SEEKER',
+  3: 'EMPLOYER'
+}
 
 module.exports = {
   AUTH_MESSAGES,
   USER_TYPES,
   ROLE_IDS,
-  TOKEN_TYPES
+  TOKEN_TYPES,
+  ROLES
 };

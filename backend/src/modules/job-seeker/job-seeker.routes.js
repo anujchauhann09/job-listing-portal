@@ -9,11 +9,6 @@ router.use(authenticate);
 router.use(authorize(['JOB_SEEKER']));
 
 
-router.post(
-  '/',
-  jobSeekerController.createProfile
-);
-
 router.get(
   '/me',
   jobSeekerController.getMyProfile
@@ -22,11 +17,6 @@ router.get(
 router.patch(
   '/me',
   jobSeekerController.updateProfile
-);
-
-router.delete(
-  '/me',
-  jobSeekerController.deleteProfile
 );
 
 

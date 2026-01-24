@@ -4,7 +4,7 @@ const path = require('path');
 const employerRepository = require('./employer.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
-const { EMPLOYER_MESSAGES } = require('./employer.constants');
+const { EMPLOYER_MESSAGES, LOGO_MESSAGES } = require('./employer.constants');
 
 
 const uploadLogo = async (userUuid, file) => {
@@ -36,7 +36,7 @@ const getLogo = async (userUuid) => {
   if (!employer || !employer.companyLogoUrl) {
     throw new AppException({
       status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.LOGO_NOT_FOUND
+      message: LOGO_MESSAGES.LOGO_NOT_FOUND
     });
   }
 
@@ -50,7 +50,7 @@ const getLogoFile = async (userUuid) => {
   if (!employer || !employer.companyLogoUrl) {
     throw new AppException({
       status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.LOGO_NOT_FOUND
+      message: LOGO_MESSAGES.LOGO_NOT_FOUND
     });
   }
 
@@ -67,7 +67,7 @@ const deleteLogo = async (userUuid) => {
   if (!employer || !employer.companyLogoUrl) {
     throw new AppException({
       status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.LOGO_NOT_FOUND
+      message: LOGO_MESSAGES.LOGO_NOT_FOUND
     });
   }
 

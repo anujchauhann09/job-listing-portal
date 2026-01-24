@@ -18,42 +18,7 @@
 
 # Employer Profile APIs
 
-## 1. Create Employer Profile
-
-### Endpoint
-```
-POST /api/v1/employer/profile
-```
-
-### Request Body (JSON)
-```json
-{
-  "companyDescription": "We build scalable backend systems.",
-  "companySize": 50,
-  "industry": "Information Technology",
-  "website": "https://example.com",
-  "headquartersCity": "Bangalore",
-  "headquartersCountry": "India"
-}
-```
-
-### Rules
-- At least one field is required
-- Employer profile can be created only once
-- Company logo is **not** uploaded here
-
-### Success Response (201)
-```json
-{
-  "success": true,
-  "message": "Employer profile created successfully",
-  "data": {}
-}
-```
-
----
-
-## 2. Get Own Employer Profile
+## 1. Get Own Employer Profile
 
 ### Endpoint
 ```
@@ -78,7 +43,7 @@ GET /api/v1/employer/profile/me
 
 ---
 
-## 3. Update Employer Profile (PATCH)
+## 2. Update Employer Profile (PATCH)
 
 ### Endpoint
 ```
@@ -108,7 +73,7 @@ PATCH /api/v1/employer/profile/me
 
 ---
 
-## 4. Public Employer Profile
+## 3. Public Employer Profile
 
 ### Endpoint
 ```
@@ -144,7 +109,7 @@ Company logo upload is intentionally separated from profile APIs.
 
 ---
 
-## 5. Upload Company Logo
+## 4. Upload Company Logo
 
 ### Endpoint
 ```
@@ -174,7 +139,7 @@ Field name: `logo`
 
 ---
 
-## 6. Get Logo URL
+## 5. Get Logo URL
 
 ### Endpoint
 ```
@@ -193,7 +158,7 @@ GET /api/v1/employer/profile/logo
 
 ---
 
-## 7. Download Company Logo
+## 6. Download Company Logo
 
 ### Endpoint
 ```
@@ -207,7 +172,7 @@ GET /api/v1/employer/profile/logo/download
 
 ---
 
-## 8. Delete Company Logo
+## 7. Delete Company Logo
 
 ### Endpoint
 ```

@@ -10,7 +10,8 @@ const EMPLOYER_MESSAGES = {
 const LOGO_MESSAGES = {
   LOGO_UPLOADED: 'Company logo uploaded successfully',
   LOGO_DELETED: 'Company logo deleted successfully',
-  LOGO_NOT_FOUND: 'Company logo not found'
+  LOGO_NOT_FOUND: 'Company logo not found',
+  LOGO_REQUIRED: 'Company logo file is required'
 };
 
 module.exports = { EMPLOYER_MESSAGES, LOGO_MESSAGES };

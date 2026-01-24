@@ -16,42 +16,9 @@
 
 ---
 
-## 1. Create Job Seeker Profile
+# Job Seeker Profile APIs
 
-### Endpoint
-```
-POST /api/v1/job-seeker/profile
-```
-
-### Request Body (JSON)
-```json
-{
-  "experienceYears": 2,
-  "currentTitle": "Backend Developer",
-  "currentLocation": "Bangalore",
-  "expectedSalary": 800000,
-  "noticePeriodDays": 30,
-  "skills": ["Node.js", "PostgreSQL"]
-}
-```
-
-### Rules
-- At least **one field is required**
-- Profile can be created **only once**
-- Resume is **NOT** uploaded here
-
-### Success Response (201)
-```json
-{
-  "success": true,
-  "message": "Job seeker profile created successfully",
-  "data": { }
-}
-```
-
----
-
-## 2. Get Own Job Seeker Profile
+## 1. Get Own Job Seeker Profile
 
 ### Endpoint
 ```
@@ -82,7 +49,7 @@ GET /api/v1/job-seeker/profile/me
 
 ---
 
-## 3. Update Job Seeker Profile (PATCH)
+## 2. Update Job Seeker Profile (PATCH)
 
 ### Endpoint
 ```
@@ -113,34 +80,13 @@ PATCH /api/v1/job-seeker/profile/me
 
 ---
 
-## 4. Delete Job Seeker Profile
-
-### Endpoint
-```
-DELETE /api/v1/job-seeker/profile/me
-```
-
-### Behavior
-- Soft delete
-- Does NOT delete user account
-
-### Success Response (200)
-```json
-{
-  "success": true,
-  "message": "Job seeker profile deleted successfully"
-}
-```
-
----
-
 # Resume APIs
 
 Resume upload is intentionally separated from profile APIs.
 
 ---
 
-## 5. Upload Resume
+## 3. Upload Resume
 
 ### Endpoint
 ```
@@ -170,7 +116,7 @@ Field name: `resume`
 
 ---
 
-## 6. Get Resume URL
+## 4. Get Resume URL
 
 ### Endpoint
 ```
@@ -189,7 +135,7 @@ GET /api/v1/job-seeker/profile/resume
 
 ---
 
-## 7. Download Resume
+## 5. Download Resume
 
 ### Endpoint
 ```
@@ -203,7 +149,7 @@ GET /api/v1/job-seeker/profile/resume/download
 
 ---
 
-## 8. Delete Resume
+## 6. Delete Resume
 
 ### Endpoint
 ```

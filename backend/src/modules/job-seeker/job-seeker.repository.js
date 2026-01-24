@@ -8,15 +8,13 @@ const getUserByUuid = async (uuid) => {
   const user = await prisma.user.findUnique({
     where: { uuid },
     select: {
-      id: true,
-      isActive: true,
-      isDeleted: true
+      id: true
     }
   });
 
-  if (!user || user.isDeleted || !user.isActive) {
+  if (!user) {
     throw new AppException(
-      JOB_SEEKER_MESSAGES.USER_NOT_FOUND,
+      JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND,
       HTTP_STATUS.NOT_FOUND
     );
   }
@@ -24,45 +22,58 @@ const getUserByUuid = async (uuid) => {
   return user; 
 };
 
-const findByUserId = (userId) => {
-  return prisma.jobSeeker.findUnique({
+
+const findByUserId = async (userId) => {
+  const profile = await prisma.jobSeeker.findUnique({
     where: { userId },
-    include: {
+    select: {
+      uuid: true,
+      resumeUrl: true,
+      experienceYears: true,
+      currentTitle: true,
+      currentLocation: true,
+      expectedSalary: true,
+      noticePeriodDays: true,
+
       skills: {
-        include: {
-          skill: true,
-        },
+        select: {
+          skill: {
+            select: {
+              name: true
+            }
+          }
+        }
       },
+
       user: {
         select: {
           email: true,
           profile: {
             select: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
+              name: true
+            }
+          }
+        }
+      }
+    }
   });
+
+  if (!profile) {
+    throw new AppException(
+      JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND
+    );
+  }
+
+  return {
+    ...profile,
+    skills: profile.skills.map(s => s.skill)
+  };
 };
 
-const create = async ({ userId, skills = [], ...data }) => {
-  return prisma.jobSeeker.create({
-    data: {
-      userId,
-      ...data,
-      skills: {
-        create: skills.map((skillId) => ({
-          skillId,
-        })),
-      },
-    },
-  });
-};
 
 const updateByUserId = async (userId, { skills, ...data }) => {
-  return prisma.jobSeeker.update({
+  await prisma.jobSeeker.update({
     where: { userId },
     data: {
       ...data,
@@ -70,20 +81,16 @@ const updateByUserId = async (userId, { skills, ...data }) => {
         skills: {
           deleteMany: {},
           create: skills.map((skillId) => ({
-            skillId,
-          })),
-        },
-      }),
-    },
+            skillId
+          }))
+        }
+      })
+    }
   });
+
+  return findByUserId(userId);
 };
 
-const softDeleteByUserId = (userId) => {
-  return prisma.jobSeeker.update({
-    where: { userId },
-    data: { isDeleted: true },
-  });
-};
 
 const resolveSkills = async (skills = []) => {
   const skillIds = [];
@@ -92,29 +99,30 @@ const resolveSkills = async (skills = []) => {
     const skill = await prisma.skill.upsert({
       where: { name },
       update: {},
-      create: { name },
+      create: { name }
     });
 
     skillIds.push(skill.id);
   }
 
-  return skillIds;
+  return skillIds; 
 };
 
 
 const updateResume = async (userId, resumeUrl) => {
-  return prisma.jobSeeker.update({
+  await prisma.jobSeeker.update({
     where: { userId },
     data: { resumeUrl }
   });
+
+  return { resumeUrl };
 };
+
 
 module.exports = {
   getUserByUuid,
   findByUserId,
-  create,
   updateByUserId,
-  softDeleteByUserId,
   resolveSkills,
   updateResume
 };

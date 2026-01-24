@@ -1,39 +1,61 @@
 const prisma = require('@/config/prisma');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
+const { EMPLOYER_MESSAGES } = require('./employer.constants');
+
 
 const getUserByUuid = async (uuid) => {
   const user = await prisma.user.findUnique({
     where: { uuid },
-    select: { id: true, isActive: true, isDeleted: true }
+    select: { id: true }
   });
 
-  if (!user || !user.isActive || user.isDeleted) {
+  if (!user) {
     throw new AppException({
       status: HTTP_STATUS.NOT_FOUND,
-      message: 'User not found'
+      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
     });
   }
 
-  return user;
+  return user; 
 };
+
 
 const findByUserId = async (userId) => {
-  return prisma.employer.findUnique({
-    where: { userId }
+  const employer = await prisma.employer.findUnique({
+    where: { userId },
+    select: {
+      uuid: true,
+      companyDescription: true,
+      companySize: true,
+      industry: true,
+      website: true,
+      headquartersCity: true,
+      headquartersCountry: true,
+      companyLogoUrl: true
+    }
   });
+
+  if (!employer) {
+    throw new AppException({
+      status: HTTP_STATUS.NOT_FOUND,
+      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
+    });
+  }
+
+  return employer;
 };
 
-const create = async (data) => {
-  return prisma.employer.create({ data });
-};
 
 const updateByUserId = async (userId, data) => {
-  return prisma.employer.update({
+  await prisma.employer.update({
     where: { userId },
     data
   });
+
+  return findByUserId(userId);
 };
+
 
 const findBySlug = async (slug) => {
   return prisma.employer.findFirst({
@@ -55,18 +77,20 @@ const findBySlug = async (slug) => {
   });
 };
 
+
 const updateLogo = async (userId, companyLogoUrl) => {
-  return prisma.employer.update({
+  await prisma.employer.update({
     where: { userId },
     data: { companyLogoUrl }
   });
+
+  return { companyLogoUrl };
 };
 
 
 module.exports = {
   getUserByUuid,
   findByUserId,
-  create,
   updateByUserId,
   findBySlug,
   updateLogo
