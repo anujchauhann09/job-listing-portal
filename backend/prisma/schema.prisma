@@ -13,6 +13,46 @@ enum OAuthProvider {
   LINKEDIN
 }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
+enum ExperienceLevel {
+  FRESHER
+  JUNIOR
+  MID
+  SENIOR
+}
+
+enum RemoteType {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum SalaryPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  REJECTED
+  HIRED
+  WITHDRAWN
+}
+
 model Role {
   id        Int     @id @default(autoincrement())
   name      String  @unique
@@ -79,6 +119,8 @@ model Employer {
   headquartersCity    String?
   headquartersCountry String?
 
+  jobs                Job[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -99,6 +141,7 @@ model JobSeeker {
   noticePeriodDays Int?
 
   skills          JobSeekerSkill[]
+  applications    JobApplication[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,6 +159,7 @@ model Skill {
   updatedAt DateTime @updatedAt
 
   jobSeekers JobSeekerSkill[]
+  jobs       JobSkill[]
 }
 
 model JobSeekerSkill {
@@ -163,4 +207,80 @@ model OAuthAccount {
   @@unique([provider, providerUserId])
   @@unique([userId, provider])
   @@index([userId])
+}
+
+model Job {
+  id               Int      @id @default(autoincrement())
+  uuid             String   @unique @default(uuid())
+
+  employerId       Int
+  employer         Employer @relation(fields: [employerId], references: [id])
+
+  title            String
+  description      String
+  qualifications   String?
+  responsibilities String?
+
+  location         String
+  jobType          JobType
+  experienceLevel  ExperienceLevel
+  remoteType       RemoteType
+
+  salaryMin        Decimal?
+  salaryMax        Decimal?
+  salaryCurrency   String?   
+  salaryPeriod     SalaryPeriod?
+
+  status           JobStatus @default(OPEN)
+  isActive         Boolean   @default(true)
+  isDeleted        Boolean   @default(false)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  skills           JobSkill[]
+  applications     JobApplication[]
+
+  @@index([employerId])
+  @@index([status])
+  @@index([jobType])
+  @@index([location])
+}
+
+model JobApplication {
+  id           Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid())
+
+  jobId        Int
+  job          Job        @relation(fields: [jobId], references: [id])
+
+  jobSeekerId  Int
+  jobSeeker    JobSeeker  @relation(fields: [jobSeekerId], references: [id])
+
+  status       ApplicationStatus @default(APPLIED)
+
+  resumeUrl    String?    
+  coverLetter  String?
+
+  appliedAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  isDeleted    Boolean    @default(false)
+
+  @@unique([jobId, jobSeekerId]) 
+  @@index([jobId])
+  @@index([jobSeekerId])
+}
+
+model JobSkill {
+  jobId    Int
+  skillId  Int
+
+  job      Job   @relation(fields: [jobId], references: [id])
+  skill    Skill @relation(fields: [skillId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@id([jobId, skillId])
+  @@index([skillId])
 }
