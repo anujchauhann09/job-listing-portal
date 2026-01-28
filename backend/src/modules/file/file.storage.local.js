@@ -1,20 +1,20 @@
 const multer = require('multer');
 const path = require('path');
+const { UPLOAD_DIRS } = require('./file.config');
 
-const { RESUME_UPLOAD_DIR } = require('./file.config');
+const createLocalStorage = (type) =>
+  multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, UPLOAD_DIRS[type]);
+    },
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, RESUME_UPLOAD_DIR);
-  },
-
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = `resume-${req.user.sub}-${Date.now()}${ext}`;
-    cb(null, filename);
-  }
-});
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const filename = `${type.toLowerCase()}-${req.user.sub}-${Date.now()}${ext}`;
+      cb(null, filename);
+    }
+  });
 
 module.exports = {
-  localStorage: storage
+  createLocalStorage
 };

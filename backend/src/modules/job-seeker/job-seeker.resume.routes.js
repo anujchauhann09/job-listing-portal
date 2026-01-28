@@ -4,7 +4,7 @@ const router = express.Router();
 const { authenticate, authorize } = require('@/middlewares/auth.middleware');
 
 const resumeController = require('./job-seeker.resume.controller');
-const { uploadResume } = require('@/modules/file/file.middleware');
+const { createUploadMiddleware } = require('@/modules/file/file.middleware');
 
 router.use(authenticate);
 router.use(authorize(['JOB_SEEKER']));
@@ -12,7 +12,7 @@ router.use(authorize(['JOB_SEEKER']));
 
 router.post(
   '/resume',
-  uploadResume.single('resume'),
+  createUploadMiddleware('RESUME').single('file'),
   resumeController.uploadResume
 );
 

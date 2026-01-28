@@ -1,99 +1,114 @@
 const fs = require('fs');
 const path = require('path');
 
-const jobSeekerRepository = require('./job-seeker.repository');
+const JobSeekerRepository = require('./job-seeker.repository');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
-const { JOB_SEEKER_MESSAGES, RESUME_MESSAGES } = require('./job-seeker.constants');
+const {
+  JOB_SEEKER_MESSAGES,
+  RESUME_MESSAGES
+} = require('./job-seeker.constants');
 
+class JobSeekerResumeService {
+  constructor() {
+    this.jobSeekerRepository = new JobSeekerRepository();
+  }
 
-const uploadResume = async (userUuid, file) => {
-  const user = await jobSeekerRepository.getUserByUuid(userUuid);
-  const profile = await jobSeekerRepository.findByUserId(user.id);
+  async uploadResume(userUuid, file) {
+    const user =
+      await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-  if (!profile || profile.isDeleted) {
-    throw new AppException({
+    const profile =
+      await this.jobSeekerRepository.findByUserId(user.id);
+
+    if (!profile || profile.isDeleted) {
+      throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND
-    });
-  }
-
-  if (profile.resumeUrl) {
-    const oldPath = path.join(process.cwd(), profile.resumeUrl);
-    if (fs.existsSync(oldPath)) {
-      fs.unlinkSync(oldPath);
+      });
     }
+
+    // Remove old resume if exists
+    if (profile.resumeUrl) {
+      const oldPath = path.join(process.cwd(), profile.resumeUrl);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    const resumeUrl = `/uploads/resumes/${file.filename}`;
+
+    await this.jobSeekerRepository.updateResume(
+      user.id,
+      resumeUrl
+    );
+
+    return { resumeUrl };
   }
 
-  const resumeUrl = `/uploads/resumes/${file.filename}`;
+  async getResume(userUuid) {
+    const user =
+      await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-  await jobSeekerRepository.updateResume(
-    user.id,
-    resumeUrl
-  );
+    const profile =
+      await this.jobSeekerRepository.findByUserId(user.id);
 
-  return { resumeUrl };
-};
+    if (!profile || !profile.resumeUrl) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: RESUME_MESSAGES.RESUME_NOT_FOUND
+      });
+    }
 
-const getResume = async (userUuid) => {
-  const user = await jobSeekerRepository.getUserByUuid(userUuid);
-  const profile = await jobSeekerRepository.findByUserId(user.id);
-
-  if (!profile || !profile.resumeUrl) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: RESUME_MESSAGES.RESUME_NOT_FOUND
-    });
+    return { resumeUrl: profile.resumeUrl };
   }
 
-  return { resumeUrl: profile.resumeUrl };
-};
+  async deleteResume(userUuid) {
+    const user =
+      await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-const deleteResume = async (userUuid) => {
-  const user = await jobSeekerRepository.getUserByUuid(userUuid);
-  const profile = await jobSeekerRepository.findByUserId(user.id);
+    const profile =
+      await this.jobSeekerRepository.findByUserId(user.id);
 
-  if (!profile || !profile.resumeUrl) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: RESUME_MESSAGES.RESUME_NOT_FOUND
-    });
+    if (!profile || !profile.resumeUrl) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: RESUME_MESSAGES.RESUME_NOT_FOUND
+      });
+    }
+
+    const filePath =
+      path.join(process.cwd(), profile.resumeUrl);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    await this.jobSeekerRepository.updateResume(user.id, null);
   }
 
-  const filePath = path.join(process.cwd(), profile.resumeUrl);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
+  async getResumeFile(userUuid) {
+    const user =
+      await this.jobSeekerRepository.getUserByUuid(userUuid);
+
+    const profile =
+      await this.jobSeekerRepository.findByUserId(user.id);
+
+    if (!profile || !profile.resumeUrl) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: RESUME_MESSAGES.RESUME_NOT_FOUND
+      });
+    }
+
+    const filePath = profile.resumeUrl;
+    const fileName = filePath.split('/').pop();
+
+    return {
+      filePath,
+      fileName
+    };
   }
+}
 
-  await jobSeekerRepository.updateResume(user.id, null);
-};
-
-const getResumeFile = async (userUuid) => {
-  const user =
-    await jobSeekerRepository.getUserByUuid(userUuid);
-
-  const profile =
-    await jobSeekerRepository.findByUserId(user.id);
-
-  if (!profile || !profile.resumeUrl) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: RESUME_MESSAGES.RESUME_NOT_FOUND
-    });
-  }
-
-  const filePath = profile.resumeUrl;
-  const fileName = filePath.split('/').pop();
-
-  return {
-    filePath,
-    fileName
-  };
-};
-
-module.exports = {
-  uploadResume,
-  getResume,
-  deleteResume,
-  getResumeFile
-};
+module.exports = new JobSeekerResumeService();

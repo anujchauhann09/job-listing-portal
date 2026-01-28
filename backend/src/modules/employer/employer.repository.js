@@ -1,97 +1,82 @@
 const prisma = require('@/config/prisma');
-const AppException = require('@/exceptions/app.exception');
-const { HTTP_STATUS } = require('@/constants/http-status');
-const { EMPLOYER_MESSAGES } = require('./employer.constants');
 
-
-const getUserByUuid = async (uuid) => {
-  const user = await prisma.user.findUnique({
-    where: { uuid },
-    select: { id: true }
-  });
-
-  if (!user) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
+class EmployerRepository {
+  async getUserByUuid(uuid) {
+    return prisma.user.findUnique({
+      where: { uuid },
+      select: { id: true },
     });
   }
 
-  return user; 
-};
-
-
-const findByUserId = async (userId) => {
-  const employer = await prisma.employer.findUnique({
-    where: { userId },
-    select: {
-      uuid: true,
-      companyDescription: true,
-      companySize: true,
-      industry: true,
-      website: true,
-      headquartersCity: true,
-      headquartersCountry: true,
-      companyLogoUrl: true
-    }
-  });
-
-  if (!employer) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
+  async findByUserId(userId) {
+    return prisma.employer.findUnique({
+      where: { userId },
+      select: {
+        uuid: true,
+        companyDescription: true,
+        companySize: true,
+        industry: true,
+        website: true,
+        headquartersCity: true,
+        headquartersCountry: true,
+        companyLogoUrl: true,
+      },
     });
   }
 
-  return employer;
-};
+  async create(data) {
+    return prisma.employer.create({
+      data,
+      select: {
+        uuid: true,
+        companyDescription: true,
+        companySize: true,
+        industry: true,
+        website: true,
+        headquartersCity: true,
+        headquartersCountry: true,
+        companyLogoUrl: true,
+      },
+    });
+  }
 
+  async updateByUserId(userId, data) {
+    await prisma.employer.update({
+      where: { userId },
+      data,
+    });
 
-const updateByUserId = async (userId, data) => {
-  await prisma.employer.update({
-    where: { userId },
-    data
-  });
+    return this.findByUserId(userId);
+  }
 
-  return findByUserId(userId);
-};
+  async findBySlug(slug) {
+    return prisma.employer.findFirst({
+      where: {
+        OR: [
+          { website: { contains: slug, mode: 'insensitive' } },
+          { industry: { contains: slug, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        companyDescription: true,
+        industry: true,
+        website: true,
+        companySize: true,
+        headquartersCity: true,
+        headquartersCountry: true,
+        companyLogoUrl: true,
+      },
+    });
+  }
 
+  async updateLogo(userId, companyLogoUrl) {
+    await prisma.employer.update({
+      where: { userId },
+      data: { companyLogoUrl },
+    });
 
-const findBySlug = async (slug) => {
-  return prisma.employer.findFirst({
-    where: {
-      OR: [
-        { website: { contains: slug, mode: 'insensitive' } },
-        { industry: { contains: slug, mode: 'insensitive' } }
-      ]
-    },
-    select: {
-      companyDescription: true,
-      industry: true,
-      website: true,
-      companySize: true,
-      headquartersCity: true,
-      headquartersCountry: true,
-      companyLogoUrl: true
-    }
-  });
-};
+    return { companyLogoUrl };
+  }
+}
 
-
-const updateLogo = async (userId, companyLogoUrl) => {
-  await prisma.employer.update({
-    where: { userId },
-    data: { companyLogoUrl }
-  });
-
-  return { companyLogoUrl };
-};
-
-
-module.exports = {
-  getUserByUuid,
-  findByUserId,
-  updateByUserId,
-  findBySlug,
-  updateLogo
-};
+module.exports = EmployerRepository;

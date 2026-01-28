@@ -1,128 +1,101 @@
 const prisma = require("@/config/prisma");
-const { AppException } = require("@/exceptions/app.exception");
-const { HTTP_STATUS } = require("@/constants/http-status");
-const { JOB_SEEKER_MESSAGES } = require("./job-seeker.constants");
 
-
-const getUserByUuid = async (uuid) => {
-  const user = await prisma.user.findUnique({
-    where: { uuid },
-    select: {
-      id: true
-    }
-  });
-
-  if (!user) {
-    throw new AppException(
-      JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND,
-      HTTP_STATUS.NOT_FOUND
-    );
-  }
-
-  return user; 
-};
-
-
-const findByUserId = async (userId) => {
-  const profile = await prisma.jobSeeker.findUnique({
-    where: { userId },
-    select: {
-      uuid: true,
-      resumeUrl: true,
-      experienceYears: true,
-      currentTitle: true,
-      currentLocation: true,
-      expectedSalary: true,
-      noticePeriodDays: true,
-
-      skills: {
-        select: {
-          skill: {
-            select: {
-              name: true
-            }
-          }
-        }
+class JobSeekerRepository {
+  async getUserByUuid(uuid) {
+    return prisma.user.findUnique({
+      where: { uuid },
+      select: {
+        id: true,
       },
-
-      user: {
-        select: {
-          email: true,
-          profile: {
-            select: {
-              name: true
-            }
-          }
-        }
-      }
-    }
-  });
-
-  if (!profile) {
-    throw new AppException(
-      JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND,
-      HTTP_STATUS.NOT_FOUND
-    );
+    });
   }
 
-  return {
-    ...profile,
-    skills: profile.skills.map(s => s.skill)
-  };
-};
+  async findByUserId(userId) {
+    const profile = await prisma.jobSeeker.findUnique({
+      where: { userId },
+      select: {
+        uuid: true,
+        resumeUrl: true,
+        experienceYears: true,
+        currentTitle: true,
+        currentLocation: true,
+        expectedSalary: true,
+        noticePeriodDays: true,
 
-
-const updateByUserId = async (userId, { skills, ...data }) => {
-  await prisma.jobSeeker.update({
-    where: { userId },
-    data: {
-      ...data,
-      ...(skills && {
         skills: {
-          deleteMany: {},
-          create: skills.map((skillId) => ({
-            skillId
-          }))
-        }
-      })
-    }
-  });
+          select: {
+            skill: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
 
-  return findByUserId(userId);
-};
-
-
-const resolveSkills = async (skills = []) => {
-  const skillIds = [];
-
-  for (const name of skills) {
-    const skill = await prisma.skill.upsert({
-      where: { name },
-      update: {},
-      create: { name }
+        user: {
+          select: {
+            email: true,
+            profile: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
-    skillIds.push(skill.id);
+    if (!profile) return null;
+
+    return {
+      ...profile,
+      skills: profile.skills.map((s) => s.skill),
+    };
   }
 
-  return skillIds; 
-};
+  async updateByUserId(userId, { skills, ...data }) {
+    await prisma.jobSeeker.update({
+      where: { userId },
+      data: {
+        ...data,
+        ...(skills && {
+          skills: {
+            deleteMany: {},
+            create: skills.map((skillId) => ({
+              skillId,
+            })),
+          },
+        }),
+      },
+    });
 
+    return this.findByUserId(userId);
+  }
 
-const updateResume = async (userId, resumeUrl) => {
-  await prisma.jobSeeker.update({
-    where: { userId },
-    data: { resumeUrl }
-  });
+  async resolveSkills(skills = []) {
+    const skillIds = [];
 
-  return { resumeUrl };
-};
+    for (const name of skills) {
+      const skill = await prisma.skill.upsert({
+        where: { name },
+        update: {},
+        create: { name },
+      });
 
+      skillIds.push(skill.id);
+    }
 
-module.exports = {
-  getUserByUuid,
-  findByUserId,
-  updateByUserId,
-  resolveSkills,
-  updateResume
-};
+    return skillIds;
+  }
+
+  async updateResume(userId, resumeUrl) {
+    await prisma.jobSeeker.update({
+      where: { userId },
+      data: { resumeUrl },
+    });
+
+    return { resumeUrl };
+  }
+}
+
+module.exports = JobSeekerRepository;

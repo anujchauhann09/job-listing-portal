@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { authenticate } = require('@/middlewares/auth.middleware');
 const { authorize } = require('@/middlewares/auth.middleware');
-const { uploadEmployerLogo } = require('@/modules/file/file.logo.middleware');
+const { createUploadMiddleware } = require('@/modules/file/file.middleware');
 
 const employerLogoController = require('./employer.logo.controller');
 
@@ -12,7 +12,7 @@ router.use(authorize(['EMPLOYER']));
 
 router.post(
   '/logo',
-  uploadEmployerLogo.single('logo'),
+  createUploadMiddleware('LOGO').single('logo'),
   employerLogoController.uploadLogo
 );
 

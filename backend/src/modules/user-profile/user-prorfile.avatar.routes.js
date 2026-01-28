@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const { authenticate } = require('@/middlewares/auth.middleware');
-const { uploadAvatar } = require('@/modules/file/file.avatar.middleware');
+const { createUploadMiddleware } = require('@/modules/file/file.middleware');
 const avatarController = require('./user-profile.avatar.controller');
 
 router.use(authenticate);
 
 router.post(
   '/avatar',
-  uploadAvatar.single('avatar'),
+  createUploadMiddleware('AVATAR').single('file'),
   avatarController.uploadAvatar
 );
 

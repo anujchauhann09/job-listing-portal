@@ -1,80 +1,92 @@
-const employerRepository = require('./employer.repository');
+const EmployerRepository = require('./employer.repository');
 
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { EMPLOYER_MESSAGES } = require('./employer.constants');
 
-const createProfile = async (userUuid, payload) => {
-  const user = await employerRepository.getUserByUuid(userUuid);
+class EmployerService {
+  constructor() {
+    this.repo = new EmployerRepository();
+  }
 
-  const existing =
-    await employerRepository.findByUserId(user.id);
+  async createProfile(userUuid, payload) {
+    const user = await this.repo.getUserByUuid(userUuid);
 
-  if (existing && !existing.isDeleted) {
-    throw new AppException({
-      status: HTTP_STATUS.CONFLICT,
-      message: EMPLOYER_MESSAGES.PROFILE_ALREADY_EXISTS
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.USER_NOT_FOUND,
+      });
+    }
+
+    const existing = await this.repo.findByUserId(user.id);
+    if (existing) {
+      throw new AppException({
+        status: HTTP_STATUS.CONFLICT,
+        message: EMPLOYER_MESSAGES.PROFILE_ALREADY_EXISTS,
+      });
+    }
+
+    return this.repo.create({
+      userId: user.id,
+      ...payload,
     });
   }
 
-  return employerRepository.create({
-    userId: user.id,
-    ...payload
-  });
-};
+  async getProfile(userUuid) {
+    const user = await this.repo.getUserByUuid(userUuid);
 
-const getProfile = async (userUuid) => {
-  const user = await employerRepository.getUserByUuid(userUuid);
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.USER_NOT_FOUND,
+      });
+    }
 
-  const profile =
-    await employerRepository.findByUserId(user.id);
+    const profile = await this.repo.findByUserId(user.id);
+    if (!profile) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND,
+      });
+    }
 
-  if (!profile || profile.isDeleted) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
-    });
+    return profile;
   }
 
-  return profile;
-};
+  async updateProfile(userUuid, payload) {
+    const user = await this.repo.getUserByUuid(userUuid);
 
-const updateProfile = async (userUuid, payload) => {
-  const user = await employerRepository.getUserByUuid(userUuid);
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.USER_NOT_FOUND,
+      });
+    }
 
-  const profile =
-    await employerRepository.findByUserId(user.id);
+    const profile = await this.repo.findByUserId(user.id);
+    if (!profile) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND,
+      });
+    }
 
-  if (!profile || profile.isDeleted) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
-    });
+    return this.repo.updateByUserId(user.id, payload);
   }
 
-  return employerRepository.updateByUserId(
-    user.id,
-    payload
-  );
-};
+  async getPublicProfile(companySlug) {
+    const profile = await this.repo.findBySlug(companySlug);
 
-const getPublicProfile = async (companySlug) => {
-  const profile =
-    await employerRepository.findBySlug(companySlug);
+    if (!profile) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND,
+      });
+    }
 
-  if (!profile || profile.isDeleted) {
-    throw new AppException({
-      status: HTTP_STATUS.NOT_FOUND,
-      message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND
-    });
+    return profile;
   }
+}
 
-  return profile;
-};
-
-module.exports = {
-  createProfile,
-  getProfile,
-  updateProfile,
-  getPublicProfile
-};
+module.exports = new EmployerService();

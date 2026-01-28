@@ -1,187 +1,127 @@
-const prisma = require('@/config/prisma');
+const AuthRepository = require('./auth.repository');
+
 const { hashPassword, comparePassword } = require('@/utils/password.util');
 const { generateAccessToken, generateRefreshToken } = require('@/utils/jwt.util');
-const AppException = require('@/exceptions/app.exception');
+const { getExpiryDate } = require('@/utils/time.util');
 const { REFRESH_TOKEN_EXPIRES_IN } = require('@/config/jwt.config');
-const { getExpiryDate } = require("@/utils/time.util");
 
+const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
-const {
-  AUTH_MESSAGES,
-  USER_TYPES,
-  ROLE_IDS
-} = require('./auth.constants');
+const { AUTH_MESSAGES, ROLE_IDS } = require('./auth.constants');
 
-const registerUser = async ({ name, email, password, userType }) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { email }
-  });
-
-  if (existingUser) {
-    throw new AppException({
-      status: HTTP_STATUS.CONFLICT,
-      message: AUTH_MESSAGES.EMAIL_EXISTS
-    });
+class AuthService {
+  constructor() {
+    this.authRepo = new AuthRepository();
   }
 
-  const roleId = ROLE_IDS[userType];
-  if (!roleId) {
-    throw new AppException({
-      status: HTTP_STATUS.BAD_REQUEST,
-      message: AUTH_MESSAGES.INVALID_USER_TYPE
-    });
-  }
-
-  const hashedPassword = await hashPassword(password);
-
-  const result = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        roleId
-      }
-    });
-
-    await tx.userProfile.create({
-      data: {
-        userId: user.id,
-        name: name.trim()
-      }
-    });
-
-    if (userType === USER_TYPES.JOB_SEEKER) {
-      await tx.jobSeeker.create({
-        data: {
-          userId: user.id
-        }
-      });
-    } else if (userType === USER_TYPES.EMPLOYER) {
-      await tx.employer.create({
-        data: {
-          userId: user.id
-        }
+  async registerUser({ name, email, password, userType }) {
+    const existingUser = await this.authRepo.findUserByEmail(email);
+    if (existingUser) {
+      throw new AppException({
+        status: HTTP_STATUS.CONFLICT,
+        message: AUTH_MESSAGES.EMAIL_EXISTS,
       });
     }
+
+    const roleId = ROLE_IDS[userType];
+    if (!roleId) {
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: AUTH_MESSAGES.INVALID_USER_TYPE,
+      });
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const user = await this.authRepo.createUserWithProfile({
+      email,
+      password: hashedPassword,
+      roleId,
+      name,
+      userType,
+    });
 
     return {
       uuid: user.uuid,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     };
-  });
+  }
 
-  return result;
-};
+  async loginUser({ email, password }) {
+    const user = await this.authRepo.findUserByEmail(email);
 
-const loginUser = async ({ email, password }) => {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      role: true,
-      profile: true   
+    if (!user || !user.isActive || user.isDeleted) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: AUTH_MESSAGES.INVALID_CREDENTIALS,
+      });
     }
-  });
 
-  if (!user) {
-    throw new AppException({
-      status: HTTP_STATUS.UNAUTHORIZED,
-      message: AUTH_MESSAGES.INVALID_CREDENTIALS
+    const isValid = await comparePassword(password, user.password);
+    if (!isValid) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: AUTH_MESSAGES.INVALID_CREDENTIALS,
+      });
+    }
+
+    const accessToken = generateAccessToken({
+      sub: user.uuid,
+      roleId: user.roleId,
     });
-  }
 
-  if (!user.isActive || user.isDeleted) {
-    throw new AppException({
-      status: HTTP_STATUS.FORBIDDEN,
-      message: AUTH_MESSAGES.ACCOUNT_INACTIVE
+    const refreshToken = generateRefreshToken({
+      sub: user.uuid,
+      roleId: user.roleId,
     });
-  }
 
-  const isPasswordValid = await comparePassword(password, user.password);
-  if (!isPasswordValid) {
-    throw new AppException({
-      status: HTTP_STATUS.UNAUTHORIZED,
-      message: AUTH_MESSAGES.INVALID_CREDENTIALS
-    });
-  }
-
-  const accessToken = generateAccessToken({
-    sub: user.uuid,
-    roleId: user.roleId
-  });
-
-  const refreshToken = generateRefreshToken({
-    sub: user.uuid,
-    roleId: user.roleId
-  });
-
-  await prisma.refreshToken.create({
-    data: {
+    await this.authRepo.saveRefreshToken({
       token: refreshToken,
       userId: user.id,
-      expiresAt: getExpiryDate(REFRESH_TOKEN_EXPIRES_IN)
-    }
-  });
-
-  return {
-    accessToken,
-    refreshToken
-  };
-};
-
-
-const refreshAccessToken = async (token) => {
-  const storedToken = await prisma.refreshToken.findUnique({
-    where: { token },
-    include: { user: true }
-  });
-
-  if (!storedToken || storedToken.isRevoked || storedToken.expiresAt < new Date()) {
-    throw new AppException({
-      status: HTTP_STATUS.UNAUTHORIZED,
-      message: AUTH_MESSAGES.INVALID_REFRESH_TOKEN
+      expiresAt: getExpiryDate(REFRESH_TOKEN_EXPIRES_IN),
     });
+
+    return { accessToken, refreshToken };
   }
 
-  const accessToken = generateAccessToken({
-    sub: storedToken.user.uuid,
-    roleId: storedToken.user.roleId
-  });
+  async refreshAccessToken(token) {
+    const storedToken = await this.authRepo.findRefreshToken(token);
 
-  return { accessToken };
-};
+    if (
+      !storedToken ||
+      storedToken.isRevoked ||
+      storedToken.expiresAt < new Date()
+    ) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: AUTH_MESSAGES.INVALID_REFRESH_TOKEN,
+      });
+    }
 
+    const accessToken = generateAccessToken({
+      sub: storedToken.user.uuid,
+      roleId: storedToken.user.roleId,
+    });
 
-const logoutUser = async (token) => {
-  if (!token) return;
+    return { accessToken };
+  }
 
-  await prisma.refreshToken.updateMany({
-    where: { token },
-    data: { isRevoked: true }
-  });
-};
+  async logoutUser(token) {
+    if (!token) return;
+    await this.authRepo.revokeRefreshToken(token);
+  }
 
-const me = async (uuid) => {
-  const user = await prisma.user.findUnique({
-    where: { uuid },
-    include: {
-      role: true,
-      profile: true,
-    },
-  });
+  async me(uuid) {
+    const user = await this.authRepo.findUserByUuid(uuid);
+    if (!user) return null;
 
-  return {
-    uuid: user.uuid,
-    email: user.email,
-    name: user.profile?.name || null,
-    role: user.role.name,
-  };
-};
+    return {
+      uuid: user.uuid,
+      email: user.email,
+      name: user.profile?.name || null,
+      role: user.role.name,
+    };
+  }
+}
 
-module.exports = {
-  registerUser,
-  loginUser,
-  refreshAccessToken,
-  logoutUser,
-  me
-};
-
+module.exports = new AuthService();

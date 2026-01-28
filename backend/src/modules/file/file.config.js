@@ -1,16 +1,21 @@
 const path = require('path');
 const fs = require('fs');
-const { FILE_CONSTANTS } = require('@/modules/file/file.constants');
+const { FILE_CONSTANTS } = require('./file.constants');
 
-const RESUME_UPLOAD_DIR = path.join(
-  process.cwd(),
-  FILE_CONSTANTS.RESUME.UPLOAD_DIR
-);
+const ensureDir = (dir) => {
+  const fullPath = path.join(process.cwd(), dir);
+  if (!fs.existsSync(fullPath)) {
+    fs.mkdirSync(fullPath, { recursive: true });
+  }
+  return fullPath;
+};
 
-if (!fs.existsSync(RESUME_UPLOAD_DIR)) {
-  fs.mkdirSync(RESUME_UPLOAD_DIR, { recursive: true });
-}
+const UPLOAD_DIRS = {
+  RESUME: ensureDir(FILE_CONSTANTS.RESUME.UPLOAD_DIR),
+  LOGO: ensureDir(FILE_CONSTANTS.LOGO.UPLOAD_DIR),
+  AVATAR: ensureDir(FILE_CONSTANTS.AVATAR.UPLOAD_DIR)
+};
 
 module.exports = {
-  RESUME_UPLOAD_DIR
+  UPLOAD_DIRS
 };

@@ -4,7 +4,9 @@ const EMPLOYER_MESSAGES = {
   PROFILE_UPDATED: 'Employer profile updated successfully',
   PROFILE_DELETED: 'Employer profile deleted successfully',
   PROFILE_ALREADY_EXISTS: 'Employer profile already exists',
-  PROFILE_NOT_FOUND: 'Employer profile not found'
+  PROFILE_NOT_FOUND: 'Employer profile not found',
+
+  USER_NOT_FOUND: 'User not found'
 };
 
 const LOGO_MESSAGES = {

@@ -9,7 +9,13 @@ const OAUTH_MESSAGES = {
   OAUTH_FAILED: 'OAuth authentication failed'
 };
 
+const USER_TYPES = {
+  JOB_SEEKER: 'JOB_SEEKER',
+  EMPLOYER: 'EMPLOYER'
+};
+
 module.exports = {
   OAUTH_PROVIDERS,
-  OAUTH_MESSAGES
+  OAUTH_MESSAGES,
+  USER_TYPES
 };
