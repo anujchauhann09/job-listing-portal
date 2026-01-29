@@ -4,11 +4,11 @@ const jobRepository = require('./job.repository');
 const { JOB_STATUS, JOB_MESSAGES } = require('./job.constants');
 const AppException = require('@/exceptions/app.exception');
 const { HTTP_STATUS } = require('@/constants/http-status');
-
+const skillService = require('@/modules/skill/skill.service')
 
 class JobService {
   async createJob(employerUuid, payload) {
-    const employer = await jobRepository.findEmployerByUuid(employerUuid);
+    const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
     if (!employer) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
@@ -16,21 +16,16 @@ class JobService {
       });
     }
 
-    const { skillIds, ...jobData } = payload;
+    const { skills, ...jobData } = payload;
 
     return prisma.$transaction(async (tx) => {
-      const job = await jobRepository.createJob(
-        tx,
-        employer.id,
-        {
-          ...jobData,
-          status: JOB_STATUS.OPEN
-        }
-      );
+      const job = await jobRepository.createJob(tx, employer.id, {
+        ...jobData,
+        status: JOB_STATUS.OPEN
+      });
 
-      if (skillIds?.length) {
-        await jobRepository.attachSkills(tx, job.id, skillIds);
-      }
+      const skills = await skillService.resolveSkillIds(tx, skills);
+      await jobRepository.attachSkills(tx, job.id, skills);
 
       return jobRepository.toPublicJob(job);
     });
@@ -46,7 +41,7 @@ class JobService {
       });
     }
 
-    const employer = await jobRepository.findEmployerByUuid(employerUuid);
+    const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
     if (job.employerId !== employer.id) {
       throw new AppException({
         status: HTTP_STATUS.FORBIDDEN,
@@ -54,7 +49,7 @@ class JobService {
       });
     }
 
-    const { skillIds, ...updateData } = payload;
+    const { skills, ...updateData } = payload;
 
     return prisma.$transaction(async (tx) => {
       const updatedJob = await jobRepository.updateJob(
@@ -63,9 +58,10 @@ class JobService {
         updateData
       );
 
-      if (Array.isArray(skillIds)) {
+      if (Array.isArray(skills)) {
+        const skillIds = await skillService.resolveSkillIds(tx, skills);
         await jobRepository.replaceSkills(tx, job.id, skillIds);
-      }
+    }
 
       return jobRepository.toPublicJob(updatedJob);
     });
@@ -80,7 +76,7 @@ class JobService {
       });
     }
 
-    const employer = await jobRepository.findEmployerByUuid(employerUuid);
+    const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
     if (job.employerId !== employer.id) {
       throw new AppException({
         status: HTTP_STATUS.FORBIDDEN,
@@ -92,7 +88,7 @@ class JobService {
   }
 
   async getEmployerJobs(employerUuid) {
-    const employer = await jobRepository.findEmployerByUuid(employerUuid);
+    const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
     return jobRepository.findJobsByEmployerId(employer.id);
   }
 

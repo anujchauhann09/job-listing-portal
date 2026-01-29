@@ -13,14 +13,14 @@ router.post(
 );
 
 router.patch(
-  '/employer/jobs/:id',
+  '/employer/jobs/:uuid',
   authenticate,
   authorize('EMPLOYER'),
   jobController.updateJob
 );
 
 router.delete(
-  '/employer/jobs/:id',
+  '/employer/jobs/:uuid',
   authenticate,
   authorize('EMPLOYER'),
   jobController.deleteJob

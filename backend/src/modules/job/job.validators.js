@@ -25,7 +25,7 @@ const createJobValidator = z.object({
   salaryCurrency: z.string().length(3).optional(),
   salaryPeriod: z.enum(Object.values(SALARY_PERIODS)).optional(),
 
-  skillIds: z.array(z.number().int().positive()).min(1)
+  skills: z.array(z.string().min(1)).min(1)
 }).refine(
   (data) =>
     !data.salaryMin ||
@@ -54,7 +54,7 @@ const updateJobValidator = z.object({
   salaryCurrency: z.string().length(3).optional(),
   salaryPeriod: z.enum(Object.values(SALARY_PERIODS)).optional(),
 
-  skillIds: z.array(z.number().int().positive()).optional()
+  skills: z.array(z.string().min(1)).min(1)
 }).refine(
   (data) =>
     !data.salaryMin ||

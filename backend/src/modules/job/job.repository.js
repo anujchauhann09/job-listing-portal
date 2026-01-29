@@ -1,9 +1,19 @@
 const prisma = require('@/config/prisma');
 
 class JobRepository {
-  findEmployerByUuid(uuid) {
-    return prisma.employer.findUnique({
-      where: { uuid },
+  findJobById(id) {
+    return prisma.job.findUnique({
+      where: { id }
+    });
+  }
+
+  findEmployerByUserUuid(userUuid) {
+    return prisma.employer.findFirst({
+      where: {
+        user: {
+          uuid: userUuid
+        }
+      },
       select: { id: true }
     });
   }

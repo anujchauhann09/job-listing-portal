@@ -28,7 +28,7 @@ const createJob = async (req, res, next) => {
 
 const updateJob = async (req, res, next) => {
   try {
-    const jobUuid = req.params.id;
+    const jobUuid = req.params.uuid;
     const payload = updateJobValidator.parse(req.body);
     const employerUuid = req.user.sub;
 
@@ -50,7 +50,7 @@ const updateJob = async (req, res, next) => {
 
 const deleteJob = async (req, res, next) => {
   try {
-    const jobUuid = req.params.id;
+    const jobUuid = req.params.uuid;
     const employerUuid = req.user.sub;
 
     await jobService.deleteJob(employerUuid, jobUuid);

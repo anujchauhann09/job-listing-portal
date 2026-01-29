@@ -1,208 +1,166 @@
-const prisma = require('@/config/prisma');
+const jobApplicationRepository = require("./job-application.repository");
+const jobRepository = require("../job/job.repository");
 
-const jobApplicationRepository = require('./job-application.repository');
-const jobRepository = require('@/job/job.repository');
+const { APPLICATION_STATUS } = require("./job-application.constants");
 
-const {
-  APPLICATION_STATUS
-} = require('./job-application.constants');
+const { isValidStatusTransition } = require("./job-application.validators");
 
-const {
-  JOB_APPLICATION_MESSAGES
-} = require('./job-application.constants');
-
-const {
-  isValidStatusTransition
-} = require('./job-application.validators');
-
-const AppException = require('@/exceptions/app.exception');
-const { HTTP_STATUS } = require('@/constants/http-status');
-
+const AppException = require("@/exceptions/app.exception");
+const { HTTP_STATUS } = require("@/constants/http-status");
+const { JOB_APPLICATION_MESSAGES } = require("./job-application.constants");
 
 class JobApplicationService {
-  async applyToJob(jobSeekerUuid, jobUuid, payload) {
+  async applyToJob(userUuid, jobUuid, payload) {
     const jobSeeker =
-      await jobApplicationRepository.findJobSeekerByUuid(jobSeekerUuid);
+      await jobApplicationRepository.findJobSeekerByUserUuid(userUuid);
 
-    if (!jobSeeker) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
-        HTTP_STATUS.FORBIDDEN
-      );
+    const job = await jobRepository.findJobByUuid(jobUuid);
+
+    if (!job || !job.isActive || job.status !== "OPEN") {
+      throw new AppException("Job not available", HTTP_STATUS.BAD_REQUEST);
     }
 
-    const job =
-      await jobRepository.findJobByUuid(jobUuid);
+    let resumeUrl;
 
-    if (!job || job.isDeleted || job.status !== 'OPEN') {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.JOB_NOT_FOUND,
-        HTTP_STATUS.NOT_FOUND
-      );
+    if (payload.resumeUrl) {
+      resumeUrl = payload.resumeUrl;
+    } else if (jobSeeker.resumeUrl) {
+      resumeUrl = jobSeeker.resumeUrl;
+    } else {
+        throw new AppException({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: JOB_APPLICATION_MESSAGES.RESUME_REQUIRED
+        });
     }
 
-    if (!job.isActive) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.JOB_CLOSED,
-        HTTP_STATUS.BAD_REQUEST
-      );
+    const absolutePath = path.join(process.cwd(), resumeUrl);
+    if (!fs.existsSync(absolutePath)) {
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: JOB_APPLICATION_MESSAGES.RESUME_NOT_FOUND
+      });
     }
 
-    if (job.employerId === jobSeeker.id) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
-        HTTP_STATUS.FORBIDDEN
-      );
-    }
-
-    const alreadyApplied =
-      await jobApplicationRepository.exists(job.id, jobSeeker.id);
-
-    if (alreadyApplied) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.ALREADY_APPLIED,
-        HTTP_STATUS.CONFLICT
-      );
-    }
-
-    return prisma.$transaction(async (tx) => {
-      const application =
-        await jobApplicationRepository.createApplication(
-          tx,
-          {
-            jobId: job.id,
-            jobSeekerId: jobSeeker.id,
-            resumeUrl: payload.resumeUrl,
-            coverLetter: payload.coverLetter,
-            status: APPLICATION_STATUS.APPLIED
-          }
-        );
-
-      return jobApplicationRepository.toPublicApplication(application);
+    return jobApplicationRepository.createApplication({
+      jobId: job.id,
+      jobSeekerId: jobSeeker.id,
+      resumeUrl, 
+      coverLetter: payload.coverLetter,
+      status: APPLICATION_STATUS.APPLIED,
     });
   }
 
-
-  async getMyApplications(jobSeekerUuid, query) {
+  async getMyApplications(userUuid, query) {
     const jobSeeker =
-      await jobApplicationRepository.findJobSeekerByUuid(jobSeekerUuid);
+      await jobApplicationRepository.findJobSeekerByUserUuid(userUuid);
 
     if (!jobSeeker) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
-        HTTP_STATUS.FORBIDDEN
-      );
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
     }
 
-    return jobApplicationRepository.findByJobSeeker(
-      jobSeeker.id,
-      query
-    );
+    return jobApplicationRepository.findByJobSeeker(jobSeeker.id, query);
   }
 
-
-  async withdrawApplication(jobSeekerUuid, applicationUuid) {
+  async withdrawApplication(userUuid, applicationUuid) {
     const jobSeeker =
-      await jobApplicationRepository.findJobSeekerByUuid(jobSeekerUuid);
+      await jobApplicationRepository.findJobSeekerByUserUuid(userUuid);
+
+    if (!jobSeeker) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
 
     const application =
       await jobApplicationRepository.findByUuid(applicationUuid);
 
-    if (
-      !application ||
-      application.jobSeekerId !== jobSeeker.id
-    ) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_FOUND,
-        HTTP_STATUS.NOT_FOUND
-      );
+    if (!application || application.jobSeekerId !== jobSeeker.id) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_APPLICATION_MESSAGES.NOT_FOUND,
+      });
     }
 
     if (
-      !isValidStatusTransition(
-        application.status,
-        APPLICATION_STATUS.WITHDRAWN
-      )
+      !isValidStatusTransition(application.status, APPLICATION_STATUS.WITHDRAWN)
     ) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.INVALID_STATUS_TRANSITION,
-        HTTP_STATUS.BAD_REQUEST
-      );
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: JOB_APPLICATION_MESSAGES.INVALID_STATUS_TRANSITION,
+      });
     }
 
     return jobApplicationRepository.updateStatus(
       application.id,
-      APPLICATION_STATUS.WITHDRAWN
+      APPLICATION_STATUS.WITHDRAWN,
     );
   }
 
-
-  async getApplicationsForJob(employerUuid, jobUuid, query) {
+  async getApplicationsForJob(userUuid, jobUuid, query) {
     const employer =
-      await jobApplicationRepository.findEmployerByUuid(employerUuid);
+      await jobApplicationRepository.findEmployerByUserUuid(userUuid);
 
-    const job =
-      await jobRepository.findJobByUuid(jobUuid);
-
-    if (!job || job.employerId !== employer.id) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
-        HTTP_STATUS.FORBIDDEN
-      );
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
     }
 
-    return jobApplicationRepository.findByJob(
-      job.id,
-      query
-    );
+    const job = await jobRepository.findJobByUuid(jobUuid);
+
+    if (!job || job.employerId !== employer.id) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
+    return jobApplicationRepository.findByJob(job.id, query);
   }
 
-
-  
-  async updateApplicationStatus(
-    employerUuid,
-    applicationUuid,
-    nextStatus
-  ) {
+  async updateApplicationStatus(userUuid, applicationUuid, nextStatus) {
     const employer =
-      await jobApplicationRepository.findEmployerByUuid(employerUuid);
+      await jobApplicationRepository.findEmployerByUserUuid(userUuid);
+
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
 
     const application =
       await jobApplicationRepository.findByUuid(applicationUuid);
 
     if (!application) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_FOUND,
-        HTTP_STATUS.NOT_FOUND
-      );
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_APPLICATION_MESSAGES.NOT_FOUND,
+      });
     }
 
-    const job =
-      await jobRepository.findJobByUuid(application.jobUuid);
+    const job = await jobRepository.findJobById(application.jobId);
 
     if (!job || job.employerId !== employer.id) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
-        HTTP_STATUS.FORBIDDEN
-      );
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
     }
 
-    if (
-      !isValidStatusTransition(
-        application.status,
-        nextStatus
-      )
-    ) {
-      throw new AppException(
-        JOB_APPLICATION_MESSAGES.INVALID_STATUS_TRANSITION,
-        HTTP_STATUS.BAD_REQUEST
-      );
+    if (!isValidStatusTransition(application.status, nextStatus)) {
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: JOB_APPLICATION_MESSAGES.INVALID_STATUS_TRANSITION,
+      });
     }
 
-    return jobApplicationRepository.updateStatus(
-      application.id,
-      nextStatus
-    );
+    return jobApplicationRepository.updateStatus(application.id, nextStatus);
   }
 }
 

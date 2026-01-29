@@ -5,20 +5,20 @@ const {
   getApplicationsValidator
 } = require('./job-application.validators');
 
-const { JOB_APPLICATION_MESSAGES } = require('./job-application.constants');
 const { HTTP_STATUS } = require('@/constants/http-status');
 const { ApiResponse } = require('@/responses/api.response');
+const { JOB_APPLICATION_MESSAGES } = require('./job-application.constants');
 
 const applyToJob = async (req, res, next) => {
   try {
-    const jobUuid = req.params.uuid;
-    const jobSeekerUuid = req.user.sub;
+    const jobUuid = req.params.uuid;        
+    const userUuid = req.user.sub;          
 
     const payload = applyJobValidator.parse(req.body);
 
     const application =
       await jobApplicationService.applyToJob(
-        jobSeekerUuid,
+        userUuid,
         jobUuid,
         payload
       );
@@ -35,12 +35,12 @@ const applyToJob = async (req, res, next) => {
 
 const getMyApplications = async (req, res, next) => {
   try {
-    const jobSeekerUuid = req.user.sub;
+    const userUuid = req.user.sub;
     const query = getApplicationsValidator.parse(req.query);
 
     const applications =
       await jobApplicationService.getMyApplications(
-        jobSeekerUuid,
+        userUuid,
         query
       );
 
@@ -57,10 +57,10 @@ const getMyApplications = async (req, res, next) => {
 const withdrawApplication = async (req, res, next) => {
   try {
     const applicationUuid = req.params.uuid;
-    const jobSeekerUuid = req.user.sub;
+    const userUuid = req.user.sub;
 
     await jobApplicationService.withdrawApplication(
-      jobSeekerUuid,
+      userUuid,
       applicationUuid
     );
 
@@ -76,13 +76,12 @@ const withdrawApplication = async (req, res, next) => {
 const getApplicationsForJob = async (req, res, next) => {
   try {
     const jobUuid = req.params.uuid;
-    const employerUuid = req.user.sub;
-
+    const userUuid = req.user.sub;
     const query = getApplicationsValidator.parse(req.query);
 
     const applications =
       await jobApplicationService.getApplicationsForJob(
-        employerUuid,
+        userUuid,
         jobUuid,
         query
       );
@@ -100,14 +99,14 @@ const getApplicationsForJob = async (req, res, next) => {
 const updateApplicationStatus = async (req, res, next) => {
   try {
     const applicationUuid = req.params.uuid;
-    const employerUuid = req.user.sub;
+    const userUuid = req.user.sub;
 
     const payload =
       updateApplicationStatusValidator.parse(req.body);
 
     const application =
       await jobApplicationService.updateApplicationStatus(
-        employerUuid,
+        userUuid,
         applicationUuid,
         payload.status
       );
@@ -127,5 +126,5 @@ module.exports = {
   getMyApplications,
   withdrawApplication,
   getApplicationsForJob,
-  updateApplicationStatus,
+  updateApplicationStatus
 };

@@ -12,6 +12,11 @@ const employerLogoRoutes = require('@/modules/employer/employer.logo.routes');
 const userProfileRoutes = require('@/modules/user-profile/user-profile.routes');
 const userProfileAvatarRoutes = require('@/modules/user-profile/user-prorfile.avatar.routes');
 
+const jobRoutes = require('@/modules/job/job.routes')
+const jobApplicationRoutes = require('@/modules/job-application/job-application.routes')
+
+const fileRouter = require('@/modules/file/file.access.routes')
+
 const router = express.Router();
 
 router.use('/auth', authRoutes);
@@ -26,6 +31,11 @@ router.use('/employer/profile', employerLogoRoutes);
 
 router.use('/user/profile', userProfileRoutes);
 router.use('/user/profile', userProfileAvatarRoutes);
+
+router.use('/', jobRoutes);
+router.use('/', jobApplicationRoutes);
+
+router.use('/uploads', fileRouter);
 
 module.exports = router;
 

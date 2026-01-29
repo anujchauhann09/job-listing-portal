@@ -1,28 +1,30 @@
 const prisma = require('@/config/prisma');
 
 class JobApplicationRepository {
-  findJobSeekerByUuid(uuid) {
-    return prisma.jobSeeker.findUnique({
-      where: { uuid },
+  findJobSeekerByUserUuid(userUuid) {
+    return prisma.jobSeeker.findFirst({
+      where: {
+        user: { uuid: userUuid }
+      },
       select: { id: true }
     });
   }
 
-
-  findEmployerByUuid(uuid) {
-    return prisma.employer.findUnique({
-      where: { uuid },
+  findEmployerByUserUuid(userUuid) {
+    return prisma.employer.findFirst({
+      where: {
+        user: { uuid: userUuid }
+      }
+    ,
       select: { id: true }
     });
   }
 
-  
   findByUuid(uuid) {
     return prisma.jobApplication.findUnique({
       where: { uuid }
     });
   }
-
 
   exists(jobId, jobSeekerId) {
     return prisma.jobApplication.findFirst({
@@ -35,13 +37,11 @@ class JobApplicationRepository {
     });
   }
 
-
   createApplication(tx, data) {
     return tx.jobApplication.create({
       data
     });
   }
-
 
   updateStatus(applicationId, status) {
     return prisma.jobApplication.update({
@@ -50,7 +50,6 @@ class JobApplicationRepository {
       select: this.publicApplicationSelect()
     });
   }
-
 
   findByJobSeeker(jobSeekerId, query) {
     const { page, limit, status } = query;
@@ -69,7 +68,6 @@ class JobApplicationRepository {
     });
   }
 
-
   findByJob(jobId, query) {
     const { page, limit, status } = query;
     const skip = (page - 1) * limit;
@@ -86,7 +84,6 @@ class JobApplicationRepository {
       select: this.employerApplicationSelect()
     });
   }
-
 
   publicApplicationSelect() {
     return {
@@ -142,7 +139,6 @@ class JobApplicationRepository {
     };
   }
 
-  
   toPublicApplication(application) {
     return {
       uuid: application.uuid,

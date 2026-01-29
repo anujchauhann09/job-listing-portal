@@ -45,7 +45,8 @@ const JOB_APPLICATION_MESSAGES = {
   NOT_AUTHORIZED: 'You are not authorized to perform this action',
   INVALID_STATUS_TRANSITION: 'Invalid application status transition',
 
-  RESUME_REQUIRED: 'Resume is required to apply for this job'
+  RESUME_REQUIRED: 'Resume is required to apply for this job',
+  RESUME_NOT_FOUND: 'Resume not found'
 };
 
 module.exports = {
