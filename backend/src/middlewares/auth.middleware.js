@@ -25,7 +25,7 @@ const authorize = (allowedRoles = []) => {
     if (!userRole || !allowedRoles.includes(userRole)) {
       throw new AppException({
         status: HTTP_STATUS.FORBIDDEN,
-        message: "You are not authorized to access this resource",
+        message: ERROR_MESSAGES.AUTHORIZATION_FAILED,
       });
     }
 
