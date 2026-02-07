@@ -3,12 +3,14 @@ const router = express.Router();
 
 const jobApplicationController = require('./job-application.controller');
 const { authenticate, authorize } = require('@/middlewares/auth.middleware');
+const { applyJobLimiter } = require('@/middlewares/rateLimiters');
 
 
 router.post(
   '/jobs/:uuid/apply',
   authenticate,
   authorize('JOB_SEEKER'),
+  applyJobLimiter,
   jobApplicationController.applyToJob
 );
 

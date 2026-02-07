@@ -3,6 +3,7 @@ const router = express.Router();
 
 const jobController = require('./job.controller');
 const { authenticate, authorize } = require('@/middlewares/auth.middleware');
+const { jobSearchLimiter } = require('@/middlewares/rateLimiters');
 
 
 router.post(
@@ -35,6 +36,7 @@ router.get(
 
 router.get(
   '/jobs',
+  jobSearchLimiter,
   jobController.getJobs
 );
 

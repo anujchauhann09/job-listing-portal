@@ -6,7 +6,8 @@ const ERROR_MESSAGES = {
   NOT_FOUND: 'Resource not found',
   VALIDATION_FAILED: 'Validation failed',
   AUTHENTICATION_FAILED: 'Authentication token is missing or invalid',
-  AUTHORIZATION_FAILED: 'You are not authorized to access this resource'
+  AUTHORIZATION_FAILED: 'You are not authorized to access this resource',
+  TOO_MANY_REQUESTS: 'Too many requests, please try again later'
 };
 
 module.exports = { ERROR_MESSAGES };

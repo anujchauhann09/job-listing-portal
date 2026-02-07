@@ -6,6 +6,7 @@ const { HTTP_STATUS } = require("@/constants/http-status");
 const {
   OAUTH_PROVIDERS,
   OAUTH_MESSAGES,
+  USER_TYPES
 } = require("./oauth.constants");
 
 const {
@@ -79,7 +80,7 @@ class OAuthService {
     );
 
     const roleId =
-      role === "EMPLOYER" ? ROLE_IDS.EMPLOYER : ROLE_IDS.JOB_SEEKER;
+      role === USER_TYPES.EMPLOYER ? ROLE_IDS.EMPLOYER : ROLE_IDS.JOB_SEEKER;
 
     const oauthUser = await this.fetchOAuthUser(provider, query.code);
 
