@@ -93,7 +93,7 @@ model UserProfile {
   userId    Int    @unique
   user      User   @relation(fields: [userId], references: [id])
 
-  name      String
+  name      String?
   bio       String?
   phone     String?
   avatarUrl String?

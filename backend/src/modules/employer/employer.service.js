@@ -51,6 +51,12 @@ class EmployerService {
       });
     }
 
+    // Convert relative logo URL to full URL for frontend
+    if (profile.companyLogoUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      profile.companyLogoUrl = `${backendUrl}${profile.companyLogoUrl}`;
+    }
+
     return profile;
   }
 
@@ -72,7 +78,15 @@ class EmployerService {
       });
     }
 
-    return this.repo.updateByUserId(user.id, payload);
+    const updated = await this.repo.updateByUserId(user.id, payload);
+
+    // Convert relative logo URL to full URL for frontend
+    if (updated.companyLogoUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      updated.companyLogoUrl = `${backendUrl}${updated.companyLogoUrl}`;
+    }
+
+    return updated;
   }
 
   async getPublicProfile(companySlug) {
@@ -83,6 +97,12 @@ class EmployerService {
         status: HTTP_STATUS.NOT_FOUND,
         message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND,
       });
+    }
+
+    // Convert relative logo URL to full URL for frontend
+    if (profile.companyLogoUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      profile.companyLogoUrl = `${backendUrl}${profile.companyLogoUrl}`;
     }
 
     return profile;

@@ -3,10 +3,20 @@ const router = express.Router();
 
 const authController = require('./auth.controller');
 const { authenticate } = require('@/middlewares/auth.middleware');
-const { authLimiter } = require('@/middlewares/rateLimiters');
+// const { authLimiter } = require('@/middlewares/rateLimiters');
 
-router.post('/register', authLimiter, authController.register);
-router.post('/login', authLimiter, authController.login);
+router.post(
+    '/register',
+    // authLimiter, 
+    authController.register
+);
+
+router.post(
+    '/login', 
+    // authLimiter, 
+    authController.login
+);
+
 router.post('/refresh', authController.refreshToken);
 router.post('/logout', authController.logout);
 router.get('/me', authenticate, authController.getMe);

@@ -24,6 +24,56 @@ class OAuthRepository {
   findUserByEmail(email) {
     return prisma.user.findUnique({
       where: { email },
+      include: {
+        profile: true,
+        jobSeeker: true,
+        employer: true,
+      },
+    });
+  }
+
+  async ensureUserProfiles(userId, roleId, name, avatar) {
+    return prisma.$transaction(async (tx) => {
+      // Check if UserProfile exists
+      const userProfile = await tx.userProfile.findUnique({
+        where: { userId },
+      });
+
+      if (!userProfile) {
+        await tx.userProfile.create({
+          data: {
+            userId,
+            name,
+            avatarUrl: avatar,
+          },
+        });
+      }
+
+      // Check if JobSeeker profile exists for JOB_SEEKER role
+      if (roleId === 2) {
+        const jobSeeker = await tx.jobSeeker.findUnique({
+          where: { userId },
+        });
+
+        if (!jobSeeker) {
+          await tx.jobSeeker.create({
+            data: { userId },
+          });
+        }
+      }
+
+      // Check if Employer profile exists for EMPLOYER role
+      if (roleId === 3) {
+        const employer = await tx.employer.findUnique({
+          where: { userId },
+        });
+
+        if (!employer) {
+          await tx.employer.create({
+            data: { userId },
+          });
+        }
+      }
     });
   }
 

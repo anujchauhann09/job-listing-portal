@@ -97,7 +97,7 @@ POST /api/v1/job-seeker/profile/resume
 ```
 multipart/form-data
 ```
-Field name: `resume`
+Field name: `file`
 
 ### Allowed Files
 - PDF, DOC, DOCX

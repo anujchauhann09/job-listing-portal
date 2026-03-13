@@ -18,7 +18,7 @@ const FILE_CONSTANTS = {
   AVATAR: {
     UPLOAD_DIR: "uploads/avatars",
     MAX_SIZE_MB: 1,
-    ALLOWED_MIME_TYPES: ["image/png", "image/jpeg", "image/webp"],
+    ALLOWED_MIME_TYPES: ["image/png", "image/jpeg", "image/jpg", "image/webp"],
   },
 };
 

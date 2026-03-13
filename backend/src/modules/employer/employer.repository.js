@@ -13,6 +13,7 @@ class EmployerRepository {
       where: { userId },
       select: {
         uuid: true,
+        companyName: true,
         companyDescription: true,
         companySize: true,
         industry: true,
@@ -29,6 +30,7 @@ class EmployerRepository {
       data,
       select: {
         uuid: true,
+        companyName: true,
         companyDescription: true,
         companySize: true,
         industry: true,
@@ -58,6 +60,7 @@ class EmployerRepository {
         ],
       },
       select: {
+        companyName: true,
         companyDescription: true,
         industry: true,
         website: true,

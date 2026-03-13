@@ -7,7 +7,7 @@ const { createLocalStorage } = require('./file.storage.local');
 const createUploadMiddleware = (type) => {
   const config = FILE_CONSTANTS[type];
 
-  return multer({
+  const upload = multer({
     storage: createLocalStorage(type),
     limits: {
       fileSize: config.MAX_SIZE_MB * 1024 * 1024
@@ -17,7 +17,7 @@ const createUploadMiddleware = (type) => {
         return cb(
           new AppException({
             status: HTTP_STATUS.BAD_REQUEST,
-            message: `Invalid file type for ${type}`
+            message: `Invalid file type for ${type}. Allowed types: ${config.ALLOWED_MIME_TYPES.join(', ')}`
           }),
           false
         );
@@ -25,6 +25,8 @@ const createUploadMiddleware = (type) => {
       cb(null, true);
     }
   });
+
+  return upload;
 };
 
 module.exports = {

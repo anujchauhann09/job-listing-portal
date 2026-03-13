@@ -28,4 +28,5 @@ const clearAuthCookies = (res) => {
 module.exports = {
   setAuthCookies,
   clearAuthCookies,
+  tokenCookieOptions,
 };

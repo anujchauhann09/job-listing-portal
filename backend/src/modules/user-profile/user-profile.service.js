@@ -29,6 +29,12 @@ class UserProfileService {
       });
     }
 
+    // Convert relative avatar URL to full URL for frontend
+    if (profile.avatarUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      profile.avatarUrl = `${backendUrl}${profile.avatarUrl}`;
+    }
+
     return profile;
   }
 
@@ -53,10 +59,18 @@ class UserProfileService {
       });
     }
 
-    return this.userProfileRepository.updateByUserId(
+    const updated = await this.userProfileRepository.updateByUserId(
       user.id,
       payload
     );
+
+    // Convert relative avatar URL to full URL for frontend
+    if (updated.avatarUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      updated.avatarUrl = `${backendUrl}${updated.avatarUrl}`;
+    }
+
+    return updated;
   }
 }
 

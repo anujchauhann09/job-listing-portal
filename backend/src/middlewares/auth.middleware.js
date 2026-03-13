@@ -5,16 +5,32 @@ const { ERROR_MESSAGES } = require("@/constants/error-messages");
 const { ROLES } = require('@/modules/auth/auth.constants');
 
 const authenticate = (req, res, next) => {
-  const token = req.cookies.accessToken;
-  if (!token)
-    throw new AppException({
-      status: HTTP_STATUS.UNAUTHORIZED,
-      message: ERROR_MESSAGES.AUTHENTICATION_FAILED,
-    });
+  try {
+    const token = req.cookies.accessToken;
+    
+    if (!token) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: ERROR_MESSAGES.AUTHENTICATION_FAILED,
+      });
+    }
 
-  const payload = verifyToken(token);
-  req.user = payload;
-  next();
+    // verifyToken will throw AppException if token is invalid/expired
+    const payload = verifyToken(token);
+    req.user = payload;
+    next();
+  } catch (error) {
+    // If it's already an AppException, pass it to error handler
+    // Otherwise, wrap it in AppException
+    if (error instanceof AppException) {
+      next(error);
+    } else {
+      next(new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: ERROR_MESSAGES.AUTHENTICATION_FAILED,
+      }));
+    }
+  }
 };
 
 const authorize = (allowedRoles = []) => {

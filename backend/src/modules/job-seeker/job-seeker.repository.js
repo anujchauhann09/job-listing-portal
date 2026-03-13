@@ -47,9 +47,21 @@ class JobSeekerRepository {
 
     if (!profile) return null;
 
+    // Restructure to match API documentation
     return {
-      ...profile,
-      skills: profile.skills.map((s) => s.skill),
+      user: {
+        name: profile.user.profile?.name || null,
+        email: profile.user.email,
+      },
+      profile: {
+        experienceYears: profile.experienceYears,
+        currentTitle: profile.currentTitle,
+        currentLocation: profile.currentLocation,
+        expectedSalary: profile.expectedSalary,
+        noticePeriodDays: profile.noticePeriodDays,
+        resumeUrl: profile.resumeUrl,
+        skills: profile.skills.map((s) => s.skill.name),
+      },
     };
   }
 

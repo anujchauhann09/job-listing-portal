@@ -12,6 +12,13 @@ class JobSeekerService {
   async getProfile(userUuid) {
     const user = await this.jobSeekerRepository.getUserByUuid(userUuid);
 
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
     const profile = await this.jobSeekerRepository.findByUserId(user.id);
 
     if (!profile) {
@@ -21,11 +28,24 @@ class JobSeekerService {
       });
     }
 
+    // Convert relative resume URL to full URL for frontend
+    if (profile.profile && profile.profile.resumeUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      profile.profile.resumeUrl = `${backendUrl}${profile.profile.resumeUrl}`;
+    }
+
     return profile;
   }
 
   async updateProfile(userUuid, payload) {
     const user = await this.jobSeekerRepository.getUserByUuid(userUuid);
+
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
 
     const profile = await this.jobSeekerRepository.findByUserId(user.id);
 
@@ -45,10 +65,18 @@ class JobSeekerService {
       updateData.skills = skillIds;
     }
 
-    return this.jobSeekerRepository.updateByUserId(
+    const updated = await this.jobSeekerRepository.updateByUserId(
       user.id,
       updateData
     );
+
+    // Convert relative resume URL to full URL for frontend
+    if (updated.profile && updated.profile.resumeUrl) {
+      const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      updated.profile.resumeUrl = `${backendUrl}${updated.profile.resumeUrl}`;
+    }
+
+    return updated;
   }
 }
 

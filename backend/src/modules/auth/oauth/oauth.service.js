@@ -148,6 +148,7 @@ class OAuthService {
     let user = await this.repo.findUserByEmail(oauthUser.email);
 
     if (!user) {
+      // Create new user with all profiles
       user = await this.repo.createUserWithProfileAndRole({
         email: oauthUser.email,
         roleId,
@@ -155,6 +156,14 @@ class OAuthService {
         avatar: oauthUser.avatar,
         role,
       });
+    } else {
+      // Existing user - ensure they have all required profiles
+      await this.repo.ensureUserProfiles(
+        user.id,
+        roleId,
+        oauthUser.name,
+        oauthUser.avatar
+      );
     }
 
     await this.repo.createOAuthAccount({

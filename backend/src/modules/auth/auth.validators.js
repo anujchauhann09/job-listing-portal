@@ -25,7 +25,6 @@ const passwordSchema = z
   .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
 
 const registerSchema = z.object({
-  name: nameSchema,
   email: emailSchema,
   password: passwordSchema,
   userType: z.enum(['JOB_SEEKER', 'EMPLOYER'])

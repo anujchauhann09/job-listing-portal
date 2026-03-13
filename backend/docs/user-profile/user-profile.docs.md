@@ -90,7 +90,7 @@ POST /api/v1/user/profile/avatar
 ```
 multipart/form-data
 ```
-Field name: `avatar`
+Field name: `file`
 
 ### Allowed Files
 - PNG, JPG, JPEG, WEBP

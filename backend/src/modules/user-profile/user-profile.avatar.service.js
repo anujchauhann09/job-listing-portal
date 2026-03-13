@@ -34,12 +34,17 @@ class UserProfileAvatarService {
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
 
-    const avatarUrl = `/uploads/avatars/${file.filename}`;
-
+    // Store relative path in database for backend use
+    const relativePath = `/uploads/avatars/${file.filename}`;
+    
     await this.userProfileRepository.updateByUserId(
       user.id,
-      { avatarUrl }
+      { avatarUrl: relativePath }
     );
+
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const avatarUrl = `${backendUrl}${relativePath}`;
 
     return { avatarUrl };
   }
@@ -58,7 +63,11 @@ class UserProfileAvatarService {
       });
     }
 
-    return { avatarUrl: profile.avatarUrl };
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const avatarUrl = `${backendUrl}${profile.avatarUrl}`;
+
+    return { avatarUrl };
   }
 
   async getAvatarFile(userUuid) {

@@ -13,9 +13,17 @@ class EmployerLogoService {
 
   async uploadLogo(userUuid, file) {
     const user = await this.employerRepository.getUserByUuid(userUuid);
+
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
     const employer = await this.employerRepository.findByUserId(user.id);
 
-    if (!employer || employer.isDeleted) {
+    if (!employer) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: EMPLOYER_MESSAGES.PROFILE_NOT_FOUND,
@@ -27,14 +35,28 @@ class EmployerLogoService {
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
 
-    const logoUrl = `/uploads/logos/${file.filename}`;
-    await this.employerRepository.updateLogo(user.id, logoUrl);
+    // Store relative path in database for backend use
+    const relativePath = `/uploads/logos/${file.filename}`;
+    await this.employerRepository.updateLogo(user.id, relativePath);
 
-    return { companyLogoUrl: logoUrl };
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const companyLogoUrl = `${backendUrl}${relativePath}`;
+
+    return { companyLogoUrl };
   }
 
   async getLogo(userUuid) {
     const user = await this.employerRepository.getUserByUuid(userUuid);
+
+
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
     const employer = await this.employerRepository.findByUserId(user.id);
 
     if (!employer || !employer.companyLogoUrl) {
@@ -44,11 +66,23 @@ class EmployerLogoService {
       });
     }
 
-    return { companyLogoUrl: employer.companyLogoUrl };
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const companyLogoUrl = `${backendUrl}${employer.companyLogoUrl}`;
+
+    return { companyLogoUrl };
   }
 
   async getLogoFile(userUuid) {
     const user = await this.employerRepository.getUserByUuid(userUuid);
+
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
     const employer = await this.employerRepository.findByUserId(user.id);
 
     if (!employer || !employer.companyLogoUrl) {
@@ -66,6 +100,14 @@ class EmployerLogoService {
 
   async deleteLogo(userUuid) {
     const user = await this.employerRepository.getUserByUuid(userUuid);
+
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
     const employer = await this.employerRepository.findByUserId(user.id);
 
     if (!employer || !employer.companyLogoUrl) {

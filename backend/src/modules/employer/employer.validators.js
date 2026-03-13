@@ -2,6 +2,7 @@ const { z } = require('zod');
 
 const createEmployerProfileSchema = z
   .object({
+    companyName: z.string().min(2).max(200).optional(),
     companyDescription: z.string().min(10).max(1000).optional(),
     companySize: z.number().int().positive().optional(),
     industry: z.string().min(2).max(100).optional(),

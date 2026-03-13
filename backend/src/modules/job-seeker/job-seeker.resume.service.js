@@ -18,10 +18,17 @@ class JobSeekerResumeService {
     const user =
       await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-    const profile =
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const profileData =
       await this.jobSeekerRepository.findByUserId(user.id);
 
-    if (!profile || profile.isDeleted) {
+    if (!profileData || !profileData.profile) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: JOB_SEEKER_MESSAGES.PROFILE_NOT_FOUND
@@ -29,19 +36,24 @@ class JobSeekerResumeService {
     }
 
     // Remove old resume if exists
-    if (profile.resumeUrl) {
-      const oldPath = path.join(process.cwd(), profile.resumeUrl);
+    if (profileData.profile.resumeUrl) {
+      const oldPath = path.join(process.cwd(), profileData.profile.resumeUrl);
       if (fs.existsSync(oldPath)) {
         fs.unlinkSync(oldPath);
       }
     }
 
-    const resumeUrl = `/uploads/resumes/${file.filename}`;
+    // Store relative path in database for backend use
+    const relativePath = `/uploads/resumes/${file.filename}`;
 
     await this.jobSeekerRepository.updateResume(
       user.id,
-      resumeUrl
+      relativePath
     );
+
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const resumeUrl = `${backendUrl}${relativePath}`;
 
     return { resumeUrl };
   }
@@ -50,27 +62,45 @@ class JobSeekerResumeService {
     const user =
       await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-    const profile =
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const profileData =
       await this.jobSeekerRepository.findByUserId(user.id);
 
-    if (!profile || !profile.resumeUrl) {
+    if (!profileData || !profileData.profile || !profileData.profile.resumeUrl) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: RESUME_MESSAGES.RESUME_NOT_FOUND
       });
     }
 
-    return { resumeUrl: profile.resumeUrl };
+    // Return full backend URL for frontend to use
+    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const resumeUrl = `${backendUrl}${profileData.profile.resumeUrl}`;
+
+    return { resumeUrl };
   }
 
   async deleteResume(userUuid) {
     const user =
       await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-    const profile =
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const profileData =
       await this.jobSeekerRepository.findByUserId(user.id);
 
-    if (!profile || !profile.resumeUrl) {
+    if (!profileData || !profileData.profile || !profileData.profile.resumeUrl) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: RESUME_MESSAGES.RESUME_NOT_FOUND
@@ -78,7 +108,7 @@ class JobSeekerResumeService {
     }
 
     const filePath =
-      path.join(process.cwd(), profile.resumeUrl);
+      path.join(process.cwd(), profileData.profile.resumeUrl);
 
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -91,17 +121,24 @@ class JobSeekerResumeService {
     const user =
       await this.jobSeekerRepository.getUserByUuid(userUuid);
 
-    const profile =
+    if (!user) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const profileData =
       await this.jobSeekerRepository.findByUserId(user.id);
 
-    if (!profile || !profile.resumeUrl) {
+    if (!profileData || !profileData.profile || !profileData.profile.resumeUrl) {
       throw new AppException({
         status: HTTP_STATUS.NOT_FOUND,
         message: RESUME_MESSAGES.RESUME_NOT_FOUND
       });
     }
 
-    const filePath = profile.resumeUrl;
+    const filePath = profileData.profile.resumeUrl;
     const fileName = filePath.split('/').pop();
 
     return {

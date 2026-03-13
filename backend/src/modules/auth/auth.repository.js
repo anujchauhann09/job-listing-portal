@@ -21,7 +21,7 @@ class AuthRepository {
     });
   }
 
-  async createUserWithProfile({ email, password, roleId, name, userType }) {
+  async createUserWithProfile({ email, password, roleId, userType }) {
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: { email, password, roleId },
@@ -30,7 +30,6 @@ class AuthRepository {
       await tx.userProfile.create({
         data: {
           userId: user.id,
-          name: name.trim(),
         },
       });
 

@@ -3,6 +3,7 @@ const authService = require("./auth.service");
 const { ApiResponse } = require("@/responses/api.response");
 const { HTTP_STATUS } = require("@/constants/http-status");
 const { AUTH_MESSAGES } = require("./auth.constants");
+const AppException = require("@/exceptions/app.exception");
 const {
   setAuthCookies,
   clearAuthCookies,
@@ -31,9 +32,17 @@ const login = async (req, res, next) => {
 
     setAuthCookies(res, result);
 
+    // Get user info to return in response
+    const user = await authService.me(result.userUuid);
+
     return new ApiResponse({
       success: true,
       message: AUTH_MESSAGES.LOGIN_SUCCESS,
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: user,
+      },
     }).send(res, HTTP_STATUS.OK);
   } catch (error) {
     next(error);
@@ -42,7 +51,16 @@ const login = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    // Try to get refresh token from body first, then from cookies
+    const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
+    
+    if (!refreshToken) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: AUTH_MESSAGES.INVALID_REFRESH_TOKEN,
+      });
+    }
+    
     const { accessToken } = await authService.refreshAccessToken(refreshToken);
 
     res.cookie("accessToken", accessToken, tokenCookieOptions);
@@ -50,7 +68,7 @@ const refreshToken = async (req, res, next) => {
     return new ApiResponse({
       success: true,
       message: AUTH_MESSAGES.TOKEN_REFRESHED,
-      data: accessToken,
+      data: { accessToken },
     }).send(res, HTTP_STATUS.OK);
   } catch (err) {
     next(err);
@@ -59,7 +77,8 @@ const refreshToken = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    // Try to get refresh token from cookies first, then from body
+    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (refreshToken) {
       await authService.logoutUser(refreshToken);

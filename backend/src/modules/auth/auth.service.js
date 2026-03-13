@@ -14,7 +14,7 @@ class AuthService {
     this.authRepo = new AuthRepository();
   }
 
-  async registerUser({ name, email, password, userType }) {
+  async registerUser({ email, password, userType }) {
     const existingUser = await this.authRepo.findUserByEmail(email);
     if (existingUser) {
       throw new AppException({
@@ -37,7 +37,6 @@ class AuthService {
       email,
       password: hashedPassword,
       roleId,
-      name,
       userType,
     });
 
@@ -81,7 +80,7 @@ class AuthService {
       expiresAt: getExpiryDate(REFRESH_TOKEN_EXPIRES_IN),
     });
 
-    return { accessToken, refreshToken };
+    return { userUuid: user.uuid, accessToken, refreshToken };
   }
 
   async refreshAccessToken(token) {
