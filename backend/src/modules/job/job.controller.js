@@ -96,11 +96,28 @@ const getJobs = async (req, res, next) => {
   }
 };
 
+const getEmployerJob = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const employerUuid = req.user.sub;
+
+    const job = await jobService.getEmployerJobByUuid(employerUuid, uuid);
+
+    return new ApiResponse({
+      success: true,
+      message: JOB_MESSAGES.FETCHED_SINGLE,
+      data: job,
+    }).send(res, HTTP_STATUS.OK);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getJob = async (req, res, next) => {
   try {
     const { uuid } = req.params;
 
-    const job = await jobService.getJobByUuid(uuid);
+    const job = await jobService.getPublicJobByUuid(uuid);
 
     return new ApiResponse({
       success: true,
@@ -117,6 +134,7 @@ module.exports = {
   updateJob,
   deleteJob,
   getEmployerJobs,
+  getEmployerJob,
   getJobs,
   getJob,
 };

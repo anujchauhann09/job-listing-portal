@@ -6,7 +6,7 @@ class JobApplicationRepository {
       where: {
         user: { uuid: userUuid }
       },
-      select: { id: true }
+      select: { id: true, resumeUrl: true }
     });
   }
 
@@ -22,7 +22,17 @@ class JobApplicationRepository {
 
   findByUuid(uuid) {
     return prisma.jobApplication.findUnique({
-      where: { uuid }
+      where: { uuid },
+      select: {
+        id: true,
+        uuid: true,
+        jobId: true,
+        jobSeekerId: true,
+        status: true,
+        resumeUrl: true,
+        coverLetter: true,
+        appliedAt: true,
+      }
     });
   }
 
@@ -37,9 +47,10 @@ class JobApplicationRepository {
     });
   }
 
-  createApplication(tx, data) {
-    return tx.jobApplication.create({
-      data
+  createApplication(data) {
+    return prisma.jobApplication.create({
+      data,
+      select: this.publicApplicationSelect()
     });
   }
 
@@ -121,6 +132,8 @@ class JobApplicationRepository {
       uuid: true,
       status: true,
       appliedAt: true,
+      coverLetter: true,
+      resumeUrl: true,
       jobSeeker: {
         select: {
           uuid: true,

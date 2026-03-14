@@ -72,6 +72,13 @@ class AuthRepository {
       data: { isRevoked: true },
     });
   }
+
+  async softDeleteUserByUuid(uuid) {
+    return prisma.user.update({
+      where: { uuid },
+      data: { isDeleted: true, isActive: false },
+    });
+  }
 }
 
 module.exports = AuthRepository;

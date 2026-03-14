@@ -4,6 +4,7 @@ const {
   EXPERIENCE_LEVELS,
   REMOTE_TYPES,
   SALARY_PERIODS,
+  JOB_STATUS,
   SORT_ORDER
 } = require('./job.constants');
 
@@ -54,7 +55,9 @@ const updateJobValidator = z.object({
   salaryCurrency: z.string().length(3).optional(),
   salaryPeriod: z.enum(Object.values(SALARY_PERIODS)).optional(),
 
-  skills: z.array(z.string().min(1)).min(1)
+  skills: z.array(z.string().min(1)).min(1),
+
+  status: z.enum(Object.values(JOB_STATUS)).optional()
 }).refine(
   (data) =>
     !data.salaryMin ||

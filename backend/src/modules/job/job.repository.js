@@ -24,6 +24,46 @@ class JobRepository {
     });
   }
 
+  findJobByUuidFull(uuid) {
+    return prisma.job.findFirst({
+      where: { uuid, isDeleted: false },
+      select: {
+        id: true,
+        uuid: true,
+        title: true,
+        description: true,
+        qualifications: true,
+        responsibilities: true,
+        location: true,
+        jobType: true,
+        experienceLevel: true,
+        remoteType: true,
+        salaryMin: true,
+        salaryMax: true,
+        salaryCurrency: true,
+        salaryPeriod: true,
+        status: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        employer: {
+          select: {
+            companyName: true,
+            companyLogoUrl: true,
+            industry: true
+          }
+        },
+        skills: {
+          select: {
+            skill: {
+              select: { name: true }
+            }
+          }
+        }
+      }
+    });
+  }
+
   createJob(tx, employerId, data) {
     return tx.job.create({
       data: {
@@ -83,7 +123,7 @@ class JobRepository {
         isDeleted: false,
         status: 'OPEN'
       },
-      select: this.publicJobSelect(true)
+      select: this.publicJobSelect()
     });
   }
 
@@ -112,6 +152,9 @@ class JobRepository {
     return {
       uuid: true,
       title: true,
+      description: true,
+      qualifications: true,
+      responsibilities: true,
       location: true,
       jobType: true,
       experienceLevel: true,
@@ -119,16 +162,17 @@ class JobRepository {
       salaryMin: true,
       salaryMax: true,
       salaryCurrency: true,
+      salaryPeriod: true,
+      status: true,
       createdAt: true,
-      ...(includeEmployer && {
-        employer: {
-          select: {
-            companyName: true,
-            companyLogoUrl: true,
-            industry: true
-          }
+      updatedAt: true,
+      employer: {
+        select: {
+          companyName: true,
+          companyLogoUrl: true,
+          industry: true
         }
-      }),
+      },
       skills: {
         select: {
           skill: {

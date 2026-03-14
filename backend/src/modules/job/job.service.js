@@ -24,8 +24,8 @@ class JobService {
         status: JOB_STATUS.OPEN
       });
 
-      const skills = await skillService.resolveSkillIds(tx, skills);
-      await jobRepository.attachSkills(tx, job.id, skills);
+      const skillIds = await skillService.resolveSkillIds(tx, skills);
+      await jobRepository.attachSkills(tx, job.id, skillIds);
 
       return jobRepository.toPublicJob(job);
     });
@@ -63,7 +63,7 @@ class JobService {
         await jobRepository.replaceSkills(tx, job.id, skillIds);
     }
 
-      return jobRepository.toPublicJob(updatedJob);
+      return jobRepository.findJobByUuidFull(job.uuid);
     });
   }
 
@@ -89,7 +89,41 @@ class JobService {
 
   async getEmployerJobs(employerUuid) {
     const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_MESSAGES.NOT_AUTHORIZED
+      });
+    }
     return jobRepository.findJobsByEmployerId(employer.id);
+  }
+
+  async getEmployerJobByUuid(employerUuid, jobUuid) {
+    const employer = await jobRepository.findEmployerByUserUuid(employerUuid);
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_MESSAGES.NOT_AUTHORIZED
+      });
+    }
+
+    const job = await jobRepository.findJobByUuidFull(jobUuid);
+    if (!job || job.isDeleted) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_MESSAGES.NOT_FOUND
+      });
+    }
+
+    const raw = await jobRepository.findJobByUuid(jobUuid);
+    if (raw.employerId !== employer.id) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_MESSAGES.NOT_AUTHORIZED
+      });
+    }
+
+    return job;
   }
 
   async getJobs(query) {
@@ -97,6 +131,18 @@ class JobService {
   }
 
   async getJobByUuid(uuid) {
+    const job = await jobRepository.findJobByUuidFull(uuid);
+    if (!job) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_MESSAGES.NOT_FOUND
+      });
+    }
+
+    return job;
+  }
+
+  async getPublicJobByUuid(uuid) {
     const job = await jobRepository.findPublicJobByUuid(uuid);
     if (!job) {
       throw new AppException({

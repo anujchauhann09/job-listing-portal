@@ -46,4 +46,11 @@ router.patch(
   jobApplicationController.updateApplicationStatus
 );
 
+router.get(
+  '/applications/:uuid/resume/download',
+  authenticate,
+  authorize('EMPLOYER'),
+  jobApplicationController.downloadApplicantResume
+);
+
 module.exports = router;

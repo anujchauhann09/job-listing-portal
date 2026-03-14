@@ -35,6 +35,13 @@ router.get(
 );
 
 router.get(
+  '/employer/jobs/:uuid',
+  authenticate,
+  authorize('EMPLOYER'),
+  jobController.getEmployerJob
+);
+
+router.get(
   '/jobs',
   // jobSearchLimiter,
   jobController.getJobs

@@ -1,3 +1,4 @@
+const path = require('path');
 const jobApplicationService = require('./job-application.service');
 const {
   applyJobValidator,
@@ -121,10 +122,25 @@ const updateApplicationStatus = async (req, res, next) => {
   }
 };
 
+const downloadApplicantResume = async (req, res, next) => {
+  try {
+    const applicationUuid = req.params.uuid;
+    const userUuid = req.user.sub;
+
+    const result = await jobApplicationService.getApplicantResumeFile(userUuid, applicationUuid);
+
+    const absolutePath = path.join(process.cwd(), result.filePath);
+    return res.download(absolutePath, result.fileName);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   applyToJob,
   getMyApplications,
   withdrawApplication,
   getApplicationsForJob,
-  updateApplicationStatus
+  updateApplicationStatus,
+  downloadApplicantResume,
 };

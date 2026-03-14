@@ -2,9 +2,7 @@ const jobApplicationRepository = require("./job-application.repository");
 const jobRepository = require("../job/job.repository");
 
 const { APPLICATION_STATUS } = require("./job-application.constants");
-
 const { isValidStatusTransition } = require("./job-application.validators");
-
 const AppException = require("@/exceptions/app.exception");
 const { HTTP_STATUS } = require("@/constants/http-status");
 const { JOB_APPLICATION_MESSAGES } = require("./job-application.constants");
@@ -14,37 +12,38 @@ class JobApplicationService {
     const jobSeeker =
       await jobApplicationRepository.findJobSeekerByUserUuid(userUuid);
 
+    if (!jobSeeker) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
     const job = await jobRepository.findJobByUuid(jobUuid);
 
     if (!job || !job.isActive || job.status !== "OPEN") {
-      throw new AppException("Job not available", HTTP_STATUS.BAD_REQUEST);
-    }
-
-    let resumeUrl;
-
-    if (payload.resumeUrl) {
-      resumeUrl = payload.resumeUrl;
-    } else if (jobSeeker.resumeUrl) {
-      resumeUrl = jobSeeker.resumeUrl;
-    } else {
-        throw new AppException({
-          status: HTTP_STATUS.BAD_REQUEST,
-          message: JOB_APPLICATION_MESSAGES.RESUME_REQUIRED
-        });
-    }
-
-    const absolutePath = path.join(process.cwd(), resumeUrl);
-    if (!fs.existsSync(absolutePath)) {
       throw new AppException({
         status: HTTP_STATUS.BAD_REQUEST,
-        message: JOB_APPLICATION_MESSAGES.RESUME_NOT_FOUND
+        message: JOB_APPLICATION_MESSAGES.JOB_CLOSED,
       });
     }
+
+    // Duplicate check
+    const existing = await jobApplicationRepository.exists(job.id, jobSeeker.id);
+    if (existing) {
+      throw new AppException({
+        status: HTTP_STATUS.CONFLICT,
+        message: JOB_APPLICATION_MESSAGES.ALREADY_APPLIED,
+      });
+    }
+
+    // Resolve resumeUrl: payload > jobSeeker profile
+    const resumeUrl = payload.resumeUrl || jobSeeker.resumeUrl || null;
 
     return jobApplicationRepository.createApplication({
       jobId: job.id,
       jobSeekerId: jobSeeker.id,
-      resumeUrl, 
+      resumeUrl,
       coverLetter: payload.coverLetter,
       status: APPLICATION_STATUS.APPLIED,
     });
@@ -123,8 +122,51 @@ class JobApplicationService {
     return jobApplicationRepository.findByJob(job.id, query);
   }
 
-  async updateApplicationStatus(userUuid, applicationUuid, nextStatus) {
-    const employer =
+  async getApplicantResumeFile(userUuid, applicationUuid) {
+    const employer = await jobApplicationRepository.findEmployerByUserUuid(userUuid);
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
+    const application = await jobApplicationRepository.findByUuid(applicationUuid);
+    if (!application) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_APPLICATION_MESSAGES.NOT_FOUND,
+      });
+    }
+
+    // Verify this application belongs to a job owned by this employer
+    const job = await jobRepository.findJobById(application.jobId);
+    if (!job || job.employerId !== employer.id) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
+    if (!application.resumeUrl) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: 'No resume attached to this application',
+      });
+    }
+
+    // Strip full URL prefix if stored as http://... — extract relative /uploads/... path
+    let relativePath = application.resumeUrl;
+    const uploadsIndex = relativePath.indexOf('/uploads/');
+    if (uploadsIndex !== -1) relativePath = relativePath.substring(uploadsIndex);
+
+    return {
+      filePath: relativePath,
+      fileName: relativePath.split('/').pop() || 'resume.pdf',
+    };
+  }
+
+  async updateApplicationStatus(userUuid, applicationUuid, nextStatus) {    const employer =
       await jobApplicationRepository.findEmployerByUserUuid(userUuid);
 
     if (!employer) {

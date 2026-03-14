@@ -6,7 +6,7 @@ const {
 
 
 const applyJobValidator = z.object({
-  resumeUrl: z.string().min(1),  
+  resumeUrl: z.string().min(1).optional(),
   coverLetter: z.string().optional()
 });
 

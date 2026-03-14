@@ -109,10 +109,24 @@ const getMe = async (req, res, next) => {
   }
 };
 
+const deleteAccount = async (req, res, next) => {
+  try {
+    await authService.deleteAccount(req.user.sub);
+    clearAuthCookies(res);
+    return new ApiResponse({
+      success: true,
+      message: 'Account deleted successfully',
+    }).send(res, HTTP_STATUS.OK);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
   refreshToken,
   logout,
-  getMe
+  getMe,
+  deleteAccount,
 };

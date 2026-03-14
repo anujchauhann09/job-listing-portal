@@ -20,5 +20,6 @@ router.post(
 router.post('/refresh', authController.refreshToken);
 router.post('/logout', authController.logout);
 router.get('/me', authenticate, authController.getMe);
+router.delete('/account', authenticate, authController.deleteAccount);
 
 module.exports = router;
