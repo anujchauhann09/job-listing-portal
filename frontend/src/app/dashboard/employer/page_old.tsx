@@ -260,19 +260,15 @@ export default function EmployerDashboard() {
           <JobListingManagement
             jobs={mockJobListings}
             onEdit={(jobId) => {
-              console.log('Edit job:', jobId);
             }}
             onToggleStatus={(jobId, newStatus) => {
-              console.log('Toggle job status:', jobId, newStatus);
             }}
             onDelete={(jobId) => {
-              console.log('Delete job:', jobId);
             }}
           />
           <ApplicationTracking
             applications={mockApplications}
             onStatusChange={(applicationId, newStatus) => {
-              console.log('Change application status:', applicationId, newStatus);
             }}
           />
         </div>
@@ -281,10 +277,8 @@ export default function EmployerDashboard() {
           <NewApplicantNotifications
             applicants={mockNewApplicants}
             onMarkAsRead={(applicantId) => {
-              console.log('Mark as read:', applicantId);
             }}
             onMarkAllAsRead={() => {
-              console.log('Mark all as read');
             }}
           />
           <ProfileCompletion

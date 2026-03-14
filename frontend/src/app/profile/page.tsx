@@ -14,7 +14,7 @@ import { jobSeekerService, JobSeekerProfile } from '@/services/jobSeeker';
 import { employerService, EmployerProfile } from '@/services/employer';
 
 function ProfilePage() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout } = useAuth();
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingJobSeeker, setIsEditingJobSeeker] = useState(false);
   const [isEditingEmployer, setIsEditingEmployer] = useState(false);
@@ -99,7 +99,7 @@ function ProfilePage() {
               });
             }
           } catch (err: any) {
-            console.log('Job seeker profile not found - user can create one');
+            // profile not yet created
           }
         } else if (user?.role === 'employer') {
           try {
@@ -117,7 +117,7 @@ function ProfilePage() {
               });
             }
           } catch (err: any) {
-            console.log('Employer profile not found - user can create one');
+            // profile not yet created
           }
         }
       } catch (err: any) {

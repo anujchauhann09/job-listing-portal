@@ -7,6 +7,23 @@ import { LoginFormData, RegisterFormData, PasswordResetFormData, ChangePasswordF
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_CACHE_KEY = 'auth_user_cache';
+
+function buildUser(backendUser: any): User {
+  const role = backendUser.role === 'JOB_SEEKER' ? 'job-seeker' : 'employer';
+  const profile = role === 'job-seeker'
+    ? { firstName: backendUser.name || '', lastName: '', location: '', skills: [], experience: '', education: '', profileCompletion: 0 }
+    : { companyName: backendUser.name || '', industry: '', companySize: '', description: '', contactPerson: '', profileCompletion: 0 };
+  return {
+    id: backendUser.uuid,
+    email: backendUser.email,
+    role: role as any,
+    profile: profile as any,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +36,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Return cached user immediately if available — avoids redundant /auth/me calls
+      const cached = sessionStorage.getItem(SESSION_CACHE_KEY);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setUser(parsed);
+          setLoading(false);
+          return;
+        } catch {
+          sessionStorage.removeItem(SESSION_CACHE_KEY);
+        }
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -26,44 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await authService.getCurrentUser();
         
         if (response.success && response.data) {
-          const backendUser = response.data as any;
-          const role = backendUser.role === 'JOB_SEEKER' ? 'job-seeker' : 'employer';
-          
-          const profile = role === 'job-seeker' 
-            ? {
-                firstName: backendUser.name || '',
-                lastName: '',
-                location: '',
-                skills: [],
-                experience: '',
-                education: '',
-                profileCompletion: 0,
-              }
-            : {
-                companyName: backendUser.name || '',
-                industry: '',
-                companySize: '',
-                description: '',
-                contactPerson: '',
-                profileCompletion: 0,
-              };
-          
-          const user: User = {
-            id: backendUser.uuid,
-            email: backendUser.email,
-            role: role as any,
-            profile: profile as any,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          
+          const user = buildUser(response.data);
+          sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(user));
           setUser(user);
-          console.log('User restored from session:', user);
         } else {
           setUser(null);
         }
       } catch (error: any) {
-        console.log('No active session');
         setUser(null);
       } finally {
         setLoading(false);
@@ -84,38 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Invalid response from server');
       }
       
-      const backendUser = response.data.user; 
-      const role = backendUser.role === 'JOB_SEEKER' ? 'job-seeker' : 'employer';
-      
-      const profile = role === 'job-seeker' 
-        ? {
-            firstName: backendUser.name || '',
-            lastName: '',
-            location: '',
-            skills: [],
-            experience: '',
-            education: '',
-            profileCompletion: 0,
-          }
-        : {
-            companyName: backendUser.name || '',
-            industry: '',
-            companySize: '',
-            description: '',
-            contactPerson: '',
-            profileCompletion: 0,
-          };
-      
-      const user: User = {
-        id: backendUser.uuid,
-        email: backendUser.email,
-        role: role as any,
-        profile: profile as any,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      setUser(user);
+      const loggedInUser = buildUser(response.data.user);
+      sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(loggedInUser));
+      setUser(loggedInUser);
       
       return response;
     } catch (error: any) {
@@ -152,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      sessionStorage.removeItem(SESSION_CACHE_KEY);
       setUser(null);
       setError(null);
       setLoading(false);
@@ -231,37 +202,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await authService.getCurrentUser();
       
       if (response.success && response.data) {
-        const backendUser = response.data as any;
-        const role = backendUser.role === 'JOB_SEEKER' ? 'job-seeker' : 'employer';
-        
-        const profile = role === 'job-seeker' 
-          ? {
-              firstName: backendUser.name || '',
-              lastName: '',
-              location: '',
-              skills: [],
-              experience: '',
-              education: '',
-              profileCompletion: 0,
-            }
-          : {
-              companyName: backendUser.name || '',
-              industry: '',
-              companySize: '',
-              description: '',
-              contactPerson: '',
-              profileCompletion: 0,
-            };
-        
-        const updatedUser: User = {
-          id: backendUser.uuid,
-          email: backendUser.email,
-          role: role as any,
-          profile: profile as any,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        
+        const updatedUser = buildUser(response.data);
+        sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(updatedUser));
         setUser(updatedUser);
         return updatedUser;
       }
@@ -269,6 +211,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to refresh user:', error);
     }
   }, [user]);
+
+  // Used after OAuth flow where user state isn't set yet
+  const loginWithSession = useCallback(async () => {
+    try {
+      const response = await authService.getCurrentUser();
+      if (response.success && response.data) {
+        const newUser = buildUser(response.data);
+        sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(newUser));
+        setUser(newUser);
+        return newUser;
+      }
+    } catch (error) {
+      console.error('Failed to initialize session user:', error);
+    }
+  }, []);
 
   const value: AuthContextType = {
     user,
@@ -282,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateProfile,
     clearError,
     refreshUser,
+    loginWithSession,
     isAuthenticated: !!user,
     isJobSeeker: user?.role === 'job-seeker',
     isEmployer: user?.role === 'employer',

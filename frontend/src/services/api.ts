@@ -27,12 +27,6 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     
-    console.log('API Request:', {
-      url,
-      method: options.method || 'GET',
-      hasBody: !!options.body,
-    });
-    
     const config: RequestInit = {
       ...options,
       headers: {
@@ -44,12 +38,6 @@ export class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
-      console.log('API Response:', {
-        url,
-        status: response.status,
-        ok: response.ok,
-      });
       
       const data = await response.json().catch(() => null);
       
@@ -113,25 +101,11 @@ export class ApiClient {
 
     const url = `${this.baseUrl}${endpoint}`;
     
-    console.log('API File Upload Request:', {
-      url,
-      fieldName,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-    });
-
     try {
       const response = await fetch(url, {
         method: 'POST',
         body: formData,
         credentials: 'include',
-      });
-      
-      console.log('API File Upload Response:', {
-        url,
-        status: response.status,
-        ok: response.ok,
       });
       
       const data = await response.json().catch(() => null);

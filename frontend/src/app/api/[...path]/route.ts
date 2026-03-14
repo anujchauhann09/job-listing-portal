@@ -60,14 +60,6 @@ async function proxyRequest(
   const contentType = request.headers.get('content-type');
   const isMultipart = contentType?.includes('multipart/form-data');
 
-  console.log('Proxy Request:', {
-    path,
-    method,
-    contentType,
-    isMultipart,
-    hasCookies: !!cookieHeader,
-  });
-
   const headers: Record<string, string> = {};
 
   if (cookieHeader) {
@@ -104,14 +96,6 @@ async function proxyRequest(
 
     const contentDisposition = response.headers.get('content-disposition');
     const isFileDownload = contentDisposition && contentDisposition.includes('attachment');
-
-    console.log('Proxy Response:', {
-      path,
-      status: response.status,
-      hasSetCookie: response.headers.has('set-cookie'),
-      isFileDownload,
-      contentDisposition,
-    });
 
     if (isFileDownload) {
       const blob = await response.blob();

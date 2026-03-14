@@ -58,7 +58,6 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
 
   const handleApplicationSubmit = async (data: { coverLetter?: string; resumeFile?: File }) => {
     // This will be handled by the application service
-    console.log('Application submitted:', data);
     setShowApplicationForm(false);
   };
 

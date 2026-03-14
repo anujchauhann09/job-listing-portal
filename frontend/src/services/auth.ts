@@ -25,7 +25,6 @@ export class AuthService {
       password: data.password,
     });
 
-    console.log('Login response:', res);
     return res;
   }
 
@@ -38,7 +37,6 @@ export class AuthService {
       userType: userType,
     });
 
-    console.log('Register response:', res);
     return res;
   }
 

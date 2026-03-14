@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default function OAuthSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshUser } = useAuth();
+  const { loginWithSession } = useAuth();
   const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function OAuthSuccessPage() {
           return;
         }
 
-        await refreshUser();
+        await loginWithSession();
 
         router.push(ROUTES.HOME);
       } catch (error) {
@@ -36,7 +36,7 @@ export default function OAuthSuccessPage() {
     };
 
     handleOAuthSuccess();
-  }, [searchParams, router, refreshUser]);
+  }, [searchParams, router, loginWithSession]);
 
   if (error) {
     return (
