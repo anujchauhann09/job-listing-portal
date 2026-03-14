@@ -16,6 +16,10 @@ app.use(cors(corsOptions));
 app.use(express.json());    
 app.use(cookieParser());
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK" });
+});
+
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
