@@ -37,36 +37,41 @@ interface ApplicationListProps {
 type SortField = 'appliedDate' | 'status' | 'jobTitle' | 'applicantName';
 type SortDirection = 'asc' | 'desc';
 
-const statusConfig = {
-  pending: {
-    label: 'Pending',
-    variant: 'secondary' as const,
+const statusConfig: Record<ApplicationStatus, {
+  label: string;
+  variant: 'secondary' | 'primary' | 'success' | 'error' | 'default';
+  icon: React.FC<{ className?: string }>;
+  color: string;
+}> = {
+  APPLIED: {
+    label: 'Applied',
+    variant: 'secondary',
     icon: Clock,
     color: 'text-secondary-600 dark:text-secondary-400',
   },
-  reviewed: {
-    label: 'Reviewed',
-    variant: 'primary' as const,
-    icon: Eye,
-    color: 'text-primary-600 dark:text-primary-400',
-  },
-  shortlisted: {
+  SHORTLISTED: {
     label: 'Shortlisted',
-    variant: 'success' as const,
+    variant: 'success',
     icon: Star,
     color: 'text-success-600 dark:text-success-400',
   },
-  rejected: {
+  REJECTED: {
     label: 'Rejected',
-    variant: 'error' as const,
+    variant: 'error',
     icon: XCircle,
     color: 'text-error-600 dark:text-error-400',
   },
-  hired: {
+  HIRED: {
     label: 'Hired',
-    variant: 'success' as const,
+    variant: 'success',
     icon: CheckCircle,
     color: 'text-success-600 dark:text-success-400',
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    variant: 'secondary',
+    icon: XCircle,
+    color: 'text-secondary-600 dark:text-secondary-400',
   },
 };
 
@@ -105,11 +110,11 @@ export function ApplicationList({
   const getStatusCounts = () => {
     return {
       all: applications.length,
-      pending: applications.filter(app => app.status === 'pending').length,
-      reviewed: applications.filter(app => app.status === 'reviewed').length,
-      shortlisted: applications.filter(app => app.status === 'shortlisted').length,
-      rejected: applications.filter(app => app.status === 'rejected').length,
-      hired: applications.filter(app => app.status === 'hired').length,
+      APPLIED: applications.filter(app => app.status === 'APPLIED').length,
+      SHORTLISTED: applications.filter(app => app.status === 'SHORTLISTED').length,
+      REJECTED: applications.filter(app => app.status === 'REJECTED').length,
+      HIRED: applications.filter(app => app.status === 'HIRED').length,
+      WITHDRAWN: applications.filter(app => app.status === 'WITHDRAWN').length,
     };
   };
 
@@ -352,20 +357,12 @@ export function ApplicationList({
                       
                       {onStatusChange && (
                         <div className="flex items-center space-x-2">
-                          {application.status === 'pending' && (
+                          {application.status === 'APPLIED' && (
                             <>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onStatusChange(application.id, 'reviewed')}
-                                className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:text-primary-400 dark:hover:text-primary-300 dark:hover:bg-primary-900/20"
-                              >
-                                Mark Reviewed
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onStatusChange(application.id, 'shortlisted')}
+                                onClick={() => onStatusChange(application.id, 'SHORTLISTED')}
                                 className="text-success-600 hover:text-success-700 hover:bg-success-50 dark:text-success-400 dark:hover:text-success-300 dark:hover:bg-success-900/20"
                               >
                                 Shortlist
@@ -373,39 +370,19 @@ export function ApplicationList({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onStatusChange(application.id, 'rejected')}
+                                onClick={() => onStatusChange(application.id, 'REJECTED')}
                                 className="text-error-600 hover:text-error-700 hover:bg-error-50 dark:text-error-400 dark:hover:text-error-300 dark:hover:bg-error-900/20"
                               >
                                 Reject
                               </Button>
                             </>
                           )}
-                          {application.status === 'reviewed' && (
+                          {application.status === 'SHORTLISTED' && (
                             <>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onStatusChange(application.id, 'shortlisted')}
-                                className="text-success-600 hover:text-success-700 hover:bg-success-50 dark:text-success-400 dark:hover:text-success-300 dark:hover:bg-success-900/20"
-                              >
-                                Shortlist
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onStatusChange(application.id, 'rejected')}
-                                className="text-error-600 hover:text-error-700 hover:bg-error-50 dark:text-error-400 dark:hover:text-error-300 dark:hover:bg-error-900/20"
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          {application.status === 'shortlisted' && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onStatusChange(application.id, 'hired')}
+                                onClick={() => onStatusChange(application.id, 'HIRED')}
                                 className="text-success-600 hover:text-success-700 hover:bg-success-50 dark:text-success-400 dark:hover:text-success-300 dark:hover:bg-success-900/20"
                               >
                                 Hire
@@ -413,7 +390,7 @@ export function ApplicationList({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onStatusChange(application.id, 'rejected')}
+                                onClick={() => onStatusChange(application.id, 'REJECTED')}
                                 className="text-error-600 hover:text-error-700 hover:bg-error-50 dark:text-error-400 dark:hover:text-error-300 dark:hover:bg-error-900/20"
                               >
                                 Reject

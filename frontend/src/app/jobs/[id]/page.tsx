@@ -23,7 +23,6 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
   const [job, setJob] = React.useState<Job | null>(null);
   const [pageLoading, setPageLoading] = React.useState(true);
   const [applyLoading, setApplyLoading] = React.useState(false);
-  const [isSaved, setIsSaved] = React.useState(false);
   const [showApplicationForm, setShowApplicationForm] = React.useState(false);
   const [notFoundFlag, setNotFoundFlag] = React.useState(false);
 
@@ -124,8 +123,6 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
     }
   };
 
-  const handleSave = () => setIsSaved((prev) => !prev);
-
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -148,10 +145,8 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
           job={job!}
           onBack={() => router.back()}
           onApply={handleApply}
-          onSave={handleSave}
           onShare={handleShare}
           isApplied={isApplied}
-          isSaved={isSaved}
           loading={applyLoading}
           showApplyButton={canApply}
         />

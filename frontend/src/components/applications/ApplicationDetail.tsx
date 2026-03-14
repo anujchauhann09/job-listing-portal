@@ -34,41 +34,47 @@ interface ApplicationDetailProps {
   className?: string;
 }
 
-const statusConfig = {
-  pending: {
-    label: 'Pending Review',
-    variant: 'secondary' as const,
+const statusConfig: Record<ApplicationStatus, {
+  label: string;
+  variant: 'secondary' | 'primary' | 'success' | 'error' | 'default';
+  icon: React.FC<{ className?: string }>;
+  color: string;
+  description: string;
+}> = {
+  APPLIED: {
+    label: 'Applied',
+    variant: 'secondary',
     icon: Clock,
     color: 'text-secondary-600 dark:text-secondary-400',
     description: 'Application is awaiting review'
   },
-  reviewed: {
-    label: 'Under Review',
-    variant: 'primary' as const,
-    icon: Eye,
-    color: 'text-primary-600 dark:text-primary-400',
-    description: 'Application is being reviewed'
-  },
-  shortlisted: {
+  SHORTLISTED: {
     label: 'Shortlisted',
-    variant: 'success' as const,
+    variant: 'success',
     icon: Star,
     color: 'text-success-600 dark:text-success-400',
     description: 'Candidate has been shortlisted'
   },
-  rejected: {
+  REJECTED: {
     label: 'Not Selected',
-    variant: 'error' as const,
+    variant: 'error',
     icon: XCircle,
     color: 'text-error-600 dark:text-error-400',
     description: 'Application was not successful'
   },
-  hired: {
+  HIRED: {
     label: 'Hired',
-    variant: 'success' as const,
+    variant: 'success',
     icon: CheckCircle,
     color: 'text-success-600 dark:text-success-400',
     description: 'Candidate has been hired'
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    variant: 'secondary',
+    icon: XCircle,
+    color: 'text-secondary-600 dark:text-secondary-400',
+    description: 'Application was withdrawn'
   },
 };
 
@@ -97,21 +103,15 @@ export function ApplicationDetail({
 
   const getNextActions = () => {
     switch (application.status) {
-      case 'pending':
+      case 'APPLIED':
         return [
-          { label: 'Mark as Reviewed', status: 'reviewed' as ApplicationStatus, variant: 'primary' as const },
-          { label: 'Shortlist', status: 'shortlisted' as ApplicationStatus, variant: 'primary' as const },
-          { label: 'Reject', status: 'rejected' as ApplicationStatus, variant: 'outline' as const },
+          { label: 'Shortlist', status: 'SHORTLISTED' as ApplicationStatus, variant: 'primary' as const },
+          { label: 'Reject', status: 'REJECTED' as ApplicationStatus, variant: 'outline' as const },
         ];
-      case 'reviewed':
+      case 'SHORTLISTED':
         return [
-          { label: 'Shortlist', status: 'shortlisted' as ApplicationStatus, variant: 'primary' as const },
-          { label: 'Reject', status: 'rejected' as ApplicationStatus, variant: 'outline' as const },
-        ];
-      case 'shortlisted':
-        return [
-          { label: 'Hire', status: 'hired' as ApplicationStatus, variant: 'primary' as const },
-          { label: 'Reject', status: 'rejected' as ApplicationStatus, variant: 'outline' as const },
+          { label: 'Hire', status: 'HIRED' as ApplicationStatus, variant: 'primary' as const },
+          { label: 'Reject', status: 'REJECTED' as ApplicationStatus, variant: 'outline' as const },
         ];
       default:
         return [];
@@ -161,17 +161,17 @@ export function ApplicationDetail({
                 <div className="flex items-center space-x-4 text-sm text-secondary-600 dark:text-secondary-400 mt-2">
                   <div className="flex items-center space-x-1">
                     <Building className="h-4 w-4" />
-                    <span>{job?.employer.companyName || 'Company'}</span>
+                    <span>{job?.employer?.companyName || 'Company'}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-4 w-4" />
                     <span>{job?.location || 'Location'}</span>
                   </div>
-                  {job?.salaryRange && (
+                  {(job?.salaryMin || job?.salaryMax) && (
                     <div className="flex items-center space-x-1">
                       <DollarSign className="h-4 w-4" />
                       <span>
-                        {job.salaryRange.currency} {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
+                        {job.salaryCurrency} {job.salaryMin?.toLocaleString()} {job.salaryMax ? `- ${job.salaryMax.toLocaleString()}` : ''}
                       </span>
                     </div>
                   )}
@@ -180,7 +180,7 @@ export function ApplicationDetail({
               
               {job && (
                 <div className="pt-4 border-t border-secondary-200 dark:border-secondary-700">
-                  <Link href={`/jobs/${job.id}`}>
+                  <Link href={`/jobs/${job.uuid}`}>
                     <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-2" />
                       View Full Job Posting
