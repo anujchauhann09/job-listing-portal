@@ -97,6 +97,23 @@ const getApplicationsForJob = async (req, res, next) => {
   }
 };
 
+const getApplicationById = async (req, res, next) => {
+  try {
+    const applicationUuid = req.params.uuid;
+    const userUuid = req.user.sub;
+
+    const application = await jobApplicationService.getApplicationById(userUuid, applicationUuid);
+
+    return new ApiResponse({
+      success: true,
+      message: JOB_APPLICATION_MESSAGES.FETCHED,
+      data: application
+    }).send(res, HTTP_STATUS.OK);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const updateApplicationStatus = async (req, res, next) => {
   try {
     const applicationUuid = req.params.uuid;
@@ -141,6 +158,7 @@ module.exports = {
   getMyApplications,
   withdrawApplication,
   getApplicationsForJob,
+  getApplicationById,
   updateApplicationStatus,
   downloadApplicantResume,
 };

@@ -166,6 +166,33 @@ class JobApplicationService {
     };
   }
 
+  async getApplicationById(userUuid, applicationUuid) {
+    const employer = await jobApplicationRepository.findEmployerByUserUuid(userUuid);
+    if (!employer) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
+    const application = await jobApplicationRepository.findByUuidWithDetails(applicationUuid);
+    if (!application) {
+      throw new AppException({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: JOB_APPLICATION_MESSAGES.NOT_FOUND,
+      });
+    }
+
+    if (application.job?.employer?.id !== employer.id) {
+      throw new AppException({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: JOB_APPLICATION_MESSAGES.NOT_AUTHORIZED,
+      });
+    }
+
+    return application;
+  }
+
   async updateApplicationStatus(userUuid, applicationUuid, nextStatus) {    const employer =
       await jobApplicationRepository.findEmployerByUserUuid(userUuid);
 

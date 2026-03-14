@@ -38,6 +38,13 @@ router.get(
   jobApplicationController.getApplicationsForJob
 );
 
+router.get(
+  '/employer/applications/:uuid',
+  authenticate,
+  authorize('EMPLOYER'),
+  jobApplicationController.getApplicationById
+);
+
 
 router.patch(
   '/applications/:uuid/status',

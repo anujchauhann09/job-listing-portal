@@ -20,6 +20,50 @@ class JobApplicationRepository {
     });
   }
 
+  findByUuidWithDetails(uuid) {
+    return prisma.jobApplication.findUnique({
+      where: { uuid },
+      select: {
+        uuid: true,
+        status: true,
+        appliedAt: true,
+        coverLetter: true,
+        resumeUrl: true,
+        jobSeeker: {
+          select: {
+            uuid: true,
+            user: {
+              select: {
+                profile: {
+                  select: {
+                    name: true,
+                    avatarUrl: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        job: {
+          select: {
+            uuid: true,
+            title: true,
+            location: true,
+            jobType: true,
+            employerId: true,
+            employer: {
+              select: {
+                id: true,
+                companyName: true,
+                companyLogoUrl: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   findByUuid(uuid) {
     return prisma.jobApplication.findUnique({
       where: { uuid },

@@ -99,6 +99,11 @@ export class ApplicationService {
     } as ApiResponse<JobApplication[]>;
   }
 
+  // GET /employer/applications/:uuid
+  async getApplication(applicationUuid: string): Promise<ApiResponse<EmployerApplication>> {
+    return apiClient.get<EmployerApplication>(`/employer/applications/${applicationUuid}`);
+  }
+
   // GET /employer/jobs/:uuid/applications
   async getJobApplications(jobUuid: string): Promise<ApiResponse<EmployerApplication[]>> {
     return apiClient.get<EmployerApplication[]>(`/employer/jobs/${jobUuid}/applications`);

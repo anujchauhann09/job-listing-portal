@@ -24,9 +24,20 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
     const loadApplication = async () => {
       try {
         const response = await applicationService.getApplication(params.id);
-        
-        if (response.success) {
-          setApplication(response.data);
+
+        if (response.success && response.data) {
+          const raw = response.data;
+          // Map EmployerApplication → JobApplication for the detail component
+          const mapped: JobApplication = {
+            id: raw.uuid,
+            jobId: '',
+            jobSeekerId: raw.jobSeeker?.uuid ?? '',
+            status: raw.status,
+            appliedDate: new Date(raw.appliedAt),
+            coverLetter: raw.coverLetter,
+            resumeUrl: raw.resumeUrl ?? '',
+          };
+          setApplication(mapped);
         } else {
           setError(response.message || 'Failed to load application');
         }
@@ -44,10 +55,7 @@ export default function ApplicationDetailPage({ params }: ApplicationDetailPageP
     setUpdating(true);
     
     try {
-      const response = await applicationService.updateApplicationStatus({
-        applicationId,
-        status: newStatus
-      });
+      const response = await applicationService.updateApplicationStatus(applicationId, newStatus);
       
       if (response.success) {
         setApplication(prev => prev ? { ...prev, status: newStatus } : null);
