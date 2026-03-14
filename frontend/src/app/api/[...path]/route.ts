@@ -48,7 +48,10 @@ async function proxyRequest(
   method: string
 ) {
   const path = pathSegments.join('/');
-  const url = `${API_BASE_URL}/${path}`;
+
+  // Forward the original query string to the backend
+  const searchParams = request.nextUrl.searchParams.toString();
+  const url = `${API_BASE_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
 
   // Get cookies from request
   const cookies = request.cookies.getAll();

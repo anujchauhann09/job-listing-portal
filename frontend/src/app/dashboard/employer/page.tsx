@@ -1,33 +1,83 @@
 'use client';
 
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { JobListingManagement } from '@/components/dashboard/JobListingManagement';
-import { ApplicationTracking } from '@/components/dashboard/ApplicationTracking';
-import { NewApplicantNotifications } from '@/components/dashboard/NewApplicantNotifications';
 import { ProfileCompletion } from '@/components/dashboard/ProfileCompletion';
-import { 
-  Briefcase, 
-  Users, 
-  Eye, 
+import { JobCard } from '@/components/jobs/JobCard';
+import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Job } from '@/types/job';
+import { jobService } from '@/services/jobs';
+import {
+  Briefcase,
+  Users,
+  Eye,
   CheckCircle,
+  Plus,
+  Loader2,
+  Inbox,
+  Edit,
+  Trash2,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function EmployerDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Job | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role === 'employer') loadJobs();
+  }, [user]);
+
+  const loadJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await jobService.getEmployerJobs();
+      if (response.success && response.data) {
+        setJobs(response.data);
+      } else {
+        setError('Failed to load jobs');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const response = await jobService.deleteJob(deleteTarget.uuid);
+      if (response.success) {
+        setJobs((prev) => prev.filter((j) => j.uuid !== deleteTarget.uuid));
+        setDeleteTarget(null);
+      } else {
+        alert('Failed to delete job. Please try again.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete job');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (!user || user.role !== 'employer') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
-            Access Denied
-          </h2>
-          <p className="text-secondary-600 dark:text-secondary-400 mt-2">
-            This page is only accessible to employers.
-          </p>
+          <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">Access Denied</h2>
+          <p className="text-secondary-600 dark:text-secondary-400 mt-2">This page is only accessible to employers.</p>
         </div>
       </div>
     );
@@ -40,260 +90,131 @@ export default function EmployerDashboard() {
     return 'Your Company';
   };
 
-  const mockJobListings = [
-    {
-      id: 'job-1',
-      title: 'Senior Frontend Developer',
-      location: 'San Francisco, CA',
-      type: 'full-time' as const,
-      salaryRange: {
-        min: 120000,
-        max: 160000,
-        currency: 'USD',
-      },
-      status: 'active' as const,
-      applicationsCount: 15,
-      postedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-      updatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    },
-    {
-      id: 'job-2',
-      title: 'Product Manager',
-      location: 'Remote',
-      type: 'remote' as const,
-      salaryRange: {
-        min: 100000,
-        max: 130000,
-        currency: 'USD',
-      },
-      status: 'active' as const,
-      applicationsCount: 8,
-      postedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      updatedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    },
-    {
-      id: 'job-3',
-      title: 'UX Designer',
-      location: 'New York, NY',
-      type: 'full-time' as const,
-      status: 'closed' as const,
-      applicationsCount: 22,
-      postedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 2 weeks ago
-      updatedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    },
-  ];
-
-  const mockApplications = [
-    {
-      id: 'app-1',
-      jobId: 'job-1',
-      jobTitle: 'Senior Frontend Developer',
-      applicantName: 'John Smith',
-      applicantEmail: 'john.smith@email.com',
-      appliedDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      status: 'pending' as const,
-      resumeUrl: '/resumes/john-smith.pdf',
-      coverLetter: 'I am excited to apply for the Senior Frontend Developer position...',
-    },
-    {
-      id: 'app-2',
-      jobId: 'job-1',
-      jobTitle: 'Senior Frontend Developer',
-      applicantName: 'Sarah Johnson',
-      applicantEmail: 'sarah.johnson@email.com',
-      appliedDate: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      status: 'reviewed' as const,
-      resumeUrl: '/resumes/sarah-johnson.pdf',
-    },
-    {
-      id: 'app-3',
-      jobId: 'job-2',
-      jobTitle: 'Product Manager',
-      applicantName: 'Mike Chen',
-      applicantEmail: 'mike.chen@email.com',
-      appliedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      status: 'shortlisted' as const,
-      resumeUrl: '/resumes/mike-chen.pdf',
-      coverLetter: 'With 5 years of product management experience...',
-    },
-  ];
-
-  const mockNewApplicants = [
-    {
-      id: 'app-1',
-      applicantName: 'John Smith',
-      jobTitle: 'Senior Frontend Developer',
-      jobId: 'job-1',
-      appliedDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      isNew: true,
-    },
-    {
-      id: 'app-4',
-      applicantName: 'Emily Davis',
-      jobTitle: 'Product Manager',
-      jobId: 'job-2',
-      appliedDate: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-      isNew: true,
-    },
-    {
-      id: 'app-2',
-      applicantName: 'Sarah Johnson',
-      jobTitle: 'Senior Frontend Developer',
-      jobId: 'job-1',
-      appliedDate: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      isNew: false,
-    },
-  ];
-
-  const calculateProfileCompletion = () => {
-    const profile = user.profile;
-    const requiredFields = ['companyName', 'industry', 'companySize', 'description', 'contactPerson'];
-    const completedFields = requiredFields.filter(field => {
-      const value = profile[field as keyof typeof profile];
-      return value && value.toString().trim().length > 0;
-    });
-    
-    return Math.round((completedFields.length / requiredFields.length) * 100);
-  };
-
-  const profileCompletionSteps = [
-    {
-      id: 'company-info',
-      title: 'Complete Company Information',
-      description: 'Add company name, industry, and size',
-      completed: user.role === 'employer' && 'companyName' in user.profile && 
-                 !!(user.profile.companyName && user.profile.industry && user.profile.companySize),
-      href: '/profile',
-      priority: 'high' as const,
-    },
-    {
-      id: 'description',
-      title: 'Write Company Description',
-      description: 'Tell job seekers about your company culture and mission',
-      completed: user.role === 'employer' && 'description' in user.profile && 
-                 !!(user.profile.description && user.profile.description.length > 100),
-      href: '/profile',
-      priority: 'high' as const,
-    },
-    {
-      id: 'contact',
-      title: 'Add Contact Person',
-      description: 'Specify the main contact for job applications',
-      completed: user.role === 'employer' && 'contactPerson' in user.profile && 
-                 !!(user.profile.contactPerson),
-      href: '/profile',
-      priority: 'medium' as const,
-    },
-    {
-      id: 'logo',
-      title: 'Upload Company Logo',
-      description: 'Add your company logo to build brand recognition',
-      completed: user.role === 'employer' && 'logoUrl' in user.profile && 
-                 !!(user.profile.logoUrl),
-      href: '/profile',
-      priority: 'medium' as const,
-    },
-    {
-      id: 'website',
-      title: 'Add Company Website',
-      description: 'Link to your company website for more information',
-      completed: user.role === 'employer' && 'website' in user.profile && 
-                 !!(user.profile.website),
-      href: '/profile',
-      priority: 'low' as const,
-    },
-  ];
-
-  const profileCompletion = calculateProfileCompletion();
-  const totalApplications = mockApplications.length;
-  const activeJobs = mockJobListings.filter(job => job.status === 'active').length;
-  const newApplicantsCount = mockNewApplicants.filter(app => app.isNew).length;
+  const activeJobs = jobs.filter((job) => job.status === 'OPEN');
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader
-        user={user}
-        title={`${getCompanyName()} Dashboard`}
-        subtitle="Manage your job postings and track applications"
+    <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <DashboardHeader
+          user={user}
+          title={`Welcome back, ${getCompanyName()}!`}
+          subtitle="Manage your job postings and track applications"
+        />
+
+        <div className="flex justify-center gap-6 mb-8">
+          <div className="w-full max-w-xs">
+            <StatsCard title="Active Jobs" value={activeJobs.length} icon={<Briefcase className="h-6 w-6" />} />
+          </div>
+          <div className="w-full max-w-xs">
+            <StatsCard title="Total Jobs" value={jobs.length} icon={<Users className="h-6 w-6" />} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
+                  Your Job Postings
+                </h2>
+                <Button variant="primary" size="sm" asChild>
+                  <Link href="/dashboard/employer/jobs/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Post Job
+                  </Link>
+                </Button>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                </div>
+              ) : error ? (
+                <div className="bg-error-50 border border-error-200 rounded-lg p-4 dark:bg-error-900/20 dark:border-error-800">
+                  <p className="text-error-600 dark:text-error-400">{error}</p>
+                  <Button variant="outline" size="sm" onClick={loadJobs} className="mt-3">
+                    Retry
+                  </Button>
+                </div>
+              ) : jobs.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-4">
+                    <Inbox className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-2">
+                    No job postings yet
+                  </h3>
+                  <p className="text-secondary-600 dark:text-secondary-400 mb-6 max-w-md mx-auto">
+                    Start attracting top talent by posting your first job opening.
+                  </p>
+                  <Button variant="primary" asChild>
+                    <Link href="/dashboard/employer/jobs/new">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Post Your First Job
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {jobs.map((job) => (
+                    <JobCard
+                      key={job.uuid}
+                      job={job}
+                      onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}
+                      showEmployer={false}
+                      actions={
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}/edit`)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeleteTarget(job)}
+                            className="text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-900/20"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <ProfileCompletion steps={[]} userType="employer" />
+          </div>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Job Posting"
+        message={`Are you sure you want to delete "${deleteTarget?.title}"? This cannot be undone.`}
+        confirmText="Delete Job"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting}
       />
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Active Jobs"
-          value={activeJobs}
-          change={{
-            value: 1,
-            trend: 'up',
-            period: 'this week',
-          }}
-          icon={<Briefcase className="h-6 w-6" />}
-        />
-        <StatsCard
-          title="Total Applications"
-          value={totalApplications}
-          change={{
-            value: 5,
-            trend: 'up',
-            period: 'this week',
-          }}
-          icon={<Users className="h-6 w-6" />}
-        />
-        <StatsCard
-          title="New Applicants"
-          value={newApplicantsCount}
-          icon={<Eye className="h-6 w-6" />}
-        />
-        <StatsCard
-          title="Profile Complete"
-          value={`${profileCompletion}%`}
-          change={{
-            value: profileCompletion < 100 ? 100 - profileCompletion : 0,
-            trend: profileCompletion < 100 ? 'neutral' : 'up',
-            period: 'to complete',
-          }}
-          icon={<CheckCircle className="h-6 w-6" />}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <JobListingManagement
-            jobs={mockJobListings}
-            onEdit={(jobId) => {
-              console.log('Edit job:', jobId);
-            }}
-            onToggleStatus={(jobId, newStatus) => {
-              console.log('Toggle job status:', jobId, newStatus);
-            }}
-            onDelete={(jobId) => {
-              console.log('Delete job:', jobId);
-            }}
-          />
-          <ApplicationTracking
-            applications={mockApplications}
-            onStatusChange={(applicationId, newStatus) => {
-              console.log('Change application status:', applicationId, newStatus);
-            }}
-          />
-        </div>
-        
-        <div className="space-y-6">
-          <NewApplicantNotifications
-            applicants={mockNewApplicants}
-            onMarkAsRead={(applicantId) => {
-              console.log('Mark as read:', applicantId);
-            }}
-            onMarkAllAsRead={() => {
-              console.log('Mark all as read');
-            }}
-          />
-          <ProfileCompletion
-            completionPercentage={profileCompletion}
-            steps={profileCompletionSteps}
-            userType="employer"
-          />
-        </div>
-      </div>
     </div>
   );
 }

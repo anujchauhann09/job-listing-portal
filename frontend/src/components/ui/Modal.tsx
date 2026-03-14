@@ -106,7 +106,7 @@ const Modal: React.FC<ModalProps> = ({
         restoreFocus={restoreFocus}
         initialFocus={initialFocus}
         className={cn(
-          'relative w-full rounded-xl border border-secondary-200 bg-white shadow-medium dark:border-secondary-800 dark:bg-secondary-900',
+          'relative w-full rounded-xl border border-secondary-200 bg-white shadow-medium dark:border-secondary-800 dark:bg-secondary-900 flex flex-col max-h-[90vh]',
           sizes[size],
           className
         )}
@@ -116,9 +116,10 @@ const Modal: React.FC<ModalProps> = ({
           aria-modal="true"
           aria-labelledby={title ? titleId : undefined}
           aria-describedby={description ? descriptionId : undefined}
+          className="flex flex-col min-h-0 flex-1"
         >
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-6 border-b border-secondary-200 dark:border-secondary-800">
+            <div className="flex items-center justify-between p-6 border-b border-secondary-200 dark:border-secondary-800 shrink-0">
               <div>
                 {title && (
                   <h2
@@ -150,7 +151,7 @@ const Modal: React.FC<ModalProps> = ({
               )}
             </div>
           )}
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto flex-1">
             {children}
           </div>
         </div>

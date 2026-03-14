@@ -116,7 +116,7 @@ export function ApplicationTracking({
             No applications received yet
           </p>
           <Button variant="primary" size="sm" asChild>
-            <Link href="/jobs/post">
+            <Link href="/dashboard/employer/jobs/new">
               Post a Job
             </Link>
           </Button>

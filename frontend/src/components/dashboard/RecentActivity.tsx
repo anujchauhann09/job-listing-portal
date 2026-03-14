@@ -20,7 +20,7 @@ interface JobApplication {
   company: string;
   location: string;
   appliedDate: Date;
-  status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
+  status: 'APPLIED' | 'SHORTLISTED' | 'REJECTED' | 'HIRED' | 'WITHDRAWN';
   jobId: string;
 }
 
@@ -30,30 +30,30 @@ interface RecentActivityProps {
 }
 
 const statusConfig = {
-  pending: {
-    label: 'Pending',
+  APPLIED: {
+    label: 'Applied',
     variant: 'secondary' as const,
     color: 'text-secondary-600 dark:text-secondary-400',
   },
-  reviewed: {
-    label: 'Reviewed',
-    variant: 'primary' as const,
-    color: 'text-primary-600 dark:text-primary-400',
-  },
-  shortlisted: {
+  SHORTLISTED: {
     label: 'Shortlisted',
     variant: 'success' as const,
     color: 'text-success-600 dark:text-success-400',
   },
-  rejected: {
+  REJECTED: {
     label: 'Rejected',
     variant: 'error' as const,
     color: 'text-error-600 dark:text-error-400',
   },
-  hired: {
+  HIRED: {
     label: 'Hired',
     variant: 'success' as const,
     color: 'text-success-600 dark:text-success-400',
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    variant: 'secondary' as const,
+    color: 'text-secondary-500 dark:text-secondary-500',
   },
 };
 

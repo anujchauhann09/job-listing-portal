@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container } from '@/components/ui/Container';
 import { MyApplications } from '@/components/applications';
@@ -13,7 +13,12 @@ export default function JobSeekerApplicationsPage() {
     loading,
     error,
     withdrawApplication,
+    refreshApplications,
   } = useApplications();
+
+  useEffect(() => {
+    refreshApplications();
+  }, [refreshApplications]);
 
   const handleWithdrawApplication = async (applicationId: string) => {
     if (window.confirm('Are you sure you want to withdraw this application? This action cannot be undone.')) {
@@ -38,9 +43,7 @@ export default function JobSeekerApplicationsPage() {
             My Applications
           </h1>
           <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-4">
-            <p className="text-error-700 dark:text-error-300">
-              {error}
-            </p>
+            <p className="text-error-700 dark:text-error-300">{error}</p>
           </div>
         </div>
       </Container>

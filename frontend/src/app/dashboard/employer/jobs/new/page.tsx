@@ -1,58 +1,61 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Container } from '@/components/ui/Container';
 import { JobPostingForm } from '@/components/jobs';
 import { JobPostingFormData } from '@/validators/job';
-import { useRouter } from 'next/navigation';
+import { jobService } from '@/services/jobs';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NewJobPostingPage() {
   const router = useRouter();
-  const [loading, setLoading] = React.useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Redirect if not employer
+  React.useEffect(() => {
+    if (user && user.role !== 'employer') {
+      router.push('/dashboard/job-seeker');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (data: JobPostingFormData) => {
-    setLoading(true);
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('Creating job posting:', data);
-    
-      router.push('/dashboard/employer');
-      
-    } catch (error) {
-      console.error('Error creating job posting:', error);
+      setLoading(true);
+      setError(null);
+
+      const response = await jobService.createJob(data);
+
+      if (response.success) {
+        router.push('/dashboard/employer');
+      } else {
+        setError('Failed to create job posting');
+      }
+    } catch (err: any) {
+      console.error('Error creating job:', err);
+      setError(err.message || 'Failed to create job posting');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePreview = (data: JobPostingFormData) => {
-    sessionStorage.setItem('jobPreviewData', JSON.stringify(data));
-    
-    window.open('/jobs/preview', '_blank');
-  };
-
-  const handleSaveDraft = async (data: JobPostingFormData) => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Saving draft:', data);
-      alert('Draft saved successfully!');
-      
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      alert('Error saving draft. Please try again.');
-    }
-  };
+  if (!user || user.role !== 'employer') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
       <Container className="py-8">
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-error-50 border border-error-200 dark:bg-error-900/20 dark:border-error-800">
+            <p className="text-error-600 dark:text-error-400">{error}</p>
+          </div>
+        )}
+
         <JobPostingForm
           onSubmit={handleSubmit}
-          onPreview={handlePreview}
-          onSaveDraft={handleSaveDraft}
           loading={loading}
           mode="create"
         />

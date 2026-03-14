@@ -116,7 +116,7 @@ export function Footer({ className }: FooterProps) {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/jobs/post"
+                  href="/dashboard/employer/jobs/new"
                   className="text-secondary-600 hover:text-primary-600 transition-colors dark:text-secondary-400 dark:hover:text-primary-400"
                 >
                   Post a Job

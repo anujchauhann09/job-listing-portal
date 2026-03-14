@@ -1,5 +1,15 @@
 export const APP_NAME = 'Employrix';
 
+export const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+
+export function getFileUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  // Already a full URL
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  // Relative path like /uploads/resumes/file.pdf
+  return `${BACKEND_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
 export const ROUTES = {
   HOME: '/',
   ABOUT: '/about',
@@ -28,10 +38,35 @@ export const USER_ROLES = {
 } as const;
 
 export const JOB_TYPES = {
-  FULL_TIME: 'full-time',
-  PART_TIME: 'part-time',
-  CONTRACT: 'contract',
-  REMOTE: 'remote',
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  INTERNSHIP: 'INTERNSHIP',
+  CONTRACT: 'CONTRACT',
+} as const;
+
+export const EXPERIENCE_LEVELS = {
+  FRESHER: 'FRESHER',
+  JUNIOR: 'JUNIOR',
+  MID: 'MID',
+  SENIOR: 'SENIOR',
+} as const;
+
+export const REMOTE_TYPES = {
+  ONSITE: 'ONSITE',
+  REMOTE: 'REMOTE',
+  HYBRID: 'HYBRID',
+} as const;
+
+export const SALARY_PERIODS = {
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY',
+} as const;
+
+export const JOB_STATUS = {
+  DRAFT: 'DRAFT',
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  ARCHIVED: 'ARCHIVED',
 } as const;
 
 export const APPLICATION_STATUS = {

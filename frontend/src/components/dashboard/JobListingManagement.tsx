@@ -114,7 +114,7 @@ export function JobListingManagement({
             No job listings yet
           </p>
           <Button variant="primary" size="sm" asChild>
-            <Link href="/jobs/post">
+            <Link href="/dashboard/employer/jobs/new">
               Post Your First Job
             </Link>
           </Button>
@@ -133,7 +133,7 @@ export function JobListingManagement({
           Job Listings ({jobs.length})
         </h3>
         <Button variant="primary" size="sm" asChild>
-          <Link href="/jobs/post">
+          <Link href="/dashboard/employer/jobs/new">
             <Plus className="h-4 w-4 mr-2" />
             Post Job
           </Link>

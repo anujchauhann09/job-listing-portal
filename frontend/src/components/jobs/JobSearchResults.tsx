@@ -56,25 +56,24 @@ export const JobSearchResults: React.FC<JobSearchResultsProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center text-secondary-600 dark:text-secondary-400">
-          <Briefcase className="h-5 w-5 mr-2" />
-          <span>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400 min-w-0">
+          <Briefcase className="h-4 w-4 shrink-0" />
+          <span className="text-sm font-medium truncate">
             {results.total.toLocaleString()} job{results.total !== 1 ? 's' : ''} found
           </span>
         </div>
-        
         {results.total > 0 && (
-          <div className="text-sm text-secondary-500 dark:text-secondary-500">
-            Showing {results.items.length} of {results.total} jobs
-          </div>
+          <span className="text-xs text-secondary-500 dark:text-secondary-500 shrink-0">
+            Showing {results.items.length} of {results.total}
+          </span>
         )}
       </div>
 
       <div className="space-y-4">
         {results.items.map((job) => (
           <JobCard
-            key={job.id}
+            key={job.uuid}
             job={job}
             onClick={() => onJobClick(job)}
             actions={showApplyButton && onApplyToJob ? (
@@ -82,7 +81,7 @@ export const JobSearchResults: React.FC<JobSearchResultsProps> = ({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onApplyToJob(job.id);
+                  onApplyToJob(job.uuid);
                 }}
               >
                 Apply Now

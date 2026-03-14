@@ -169,7 +169,7 @@ export function Header({ user, onLogout, className }: HeaderProps) {
             {user?.role === 'employer' && (
               <>
                 <Link
-                  href="/jobs/post"
+                  href="/dashboard/employer/jobs/new"
                   className="text-secondary-700 hover:text-primary-600 font-medium transition-colors dark:text-secondary-300 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
                 >
                   Post Job
@@ -299,7 +299,7 @@ export function Header({ user, onLogout, className }: HeaderProps) {
               {user?.role === 'employer' && (
                 <>
                   <Link
-                    href="/jobs/post"
+                    href="/dashboard/employer/jobs/new"
                     className="block px-3 py-2 text-base font-medium text-secondary-700 hover:text-primary-600 hover:bg-secondary-100 rounded-md transition-colors dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

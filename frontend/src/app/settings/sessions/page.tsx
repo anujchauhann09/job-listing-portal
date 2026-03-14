@@ -1,11 +1,3 @@
 'use client';
-
-import { SettingsLayout, SessionsSettings } from '@/components/settings';
-
-export default function SessionsSettingsPage() {
-  return (
-    <SettingsLayout>
-      <SessionsSettings />
-    </SettingsLayout>
-  );
-}
+import { redirect } from 'next/navigation';
+export default function Page() { redirect('/settings'); }

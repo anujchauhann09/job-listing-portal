@@ -1,11 +1,3 @@
 'use client';
-
-import { SettingsLayout, NotificationSettings } from '@/components/settings';
-
-export default function NotificationSettingsPage() {
-  return (
-    <SettingsLayout>
-      <NotificationSettings />
-    </SettingsLayout>
-  );
-}
+import { redirect } from 'next/navigation';
+export default function Page() { redirect('/settings'); }

@@ -104,7 +104,7 @@ export function Navigation({
     },
     {
       name: 'Post New Job',
-      href: '/jobs/post',
+      href: '/dashboard/employer/jobs/new',
       icon: PlusCircle,
       description: 'Create a new job listing'
     },

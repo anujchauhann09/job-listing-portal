@@ -51,7 +51,7 @@ export function DashboardHeader({
         {
           label: 'Post Job',
           icon: Plus,
-          href: '/jobs/post',
+          href: '/dashboard/employer/jobs/new',
           variant: 'primary' as const,
         },
         {
@@ -111,33 +111,6 @@ export function DashboardHeader({
                 </Button>
               ))}
             </div>
-
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="relative p-2"
-                aria-label="Notifications"
-              >
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-error-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                )}
-              </Button>
-            </div>
-
-            {user.role === 'employer' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2"
-                aria-label="Schedule"
-              >
-                <Calendar className="h-5 w-5" />
-              </Button>
-            )}
           </div>
         </div>
 

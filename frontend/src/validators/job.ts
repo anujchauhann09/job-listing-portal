@@ -1,33 +1,71 @@
 import { z } from 'zod';
-import { JOB_TYPES } from '@/lib/constants';
+
+// Backend enum values
+export const JOB_TYPES = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  INTERNSHIP: 'INTERNSHIP',
+  CONTRACT: 'CONTRACT',
+} as const;
+
+export const EXPERIENCE_LEVELS = {
+  FRESHER: 'FRESHER',
+  JUNIOR: 'JUNIOR',
+  MID: 'MID',
+  SENIOR: 'SENIOR',
+} as const;
+
+export const REMOTE_TYPES = {
+  ONSITE: 'ONSITE',
+  REMOTE: 'REMOTE',
+  HYBRID: 'HYBRID',
+} as const;
+
+export const SALARY_PERIODS = {
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY',
+} as const;
+
+export const JOB_STATUS = {
+  DRAFT: 'DRAFT',
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
 
 export const jobPostingSchema = z.object({
-  title: z.string().min(1, 'Job title is required').max(100, 'Job title must be less than 100 characters'),
-  description: z.string().min(50, 'Job description must be at least 50 characters').max(5000, 'Job description must be less than 5000 characters'),
-  requirements: z.array(z.string().min(1, 'Requirement cannot be empty')).min(1, 'At least one requirement is needed'),
-  location: z.string().min(1, 'Location is required'),
-  type: z.enum([JOB_TYPES.FULL_TIME, JOB_TYPES.PART_TIME, JOB_TYPES.CONTRACT, JOB_TYPES.REMOTE]),
-  salaryRange: z.object({
-    min: z.number().min(0, 'Minimum salary must be positive'),
-    max: z.number().min(0, 'Maximum salary must be positive'),
-    currency: z.string().optional(),
-  }).refine((data) => data.max >= data.min, {
-    message: 'Maximum salary must be greater than or equal to minimum salary',
-    path: ['max'],
-  }).optional(),
-});
+  title: z.string().min(3, 'Job title must be at least 3 characters').max(150, 'Job title must be less than 150 characters'),
+  description: z.string().min(20, 'Job description must be at least 20 characters'),
+  qualifications: z.string().optional(),
+  responsibilities: z.string().optional(),
+  location: z.string().min(2, 'Location is required'),
+  jobType: z.enum(['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT']),
+  experienceLevel: z.enum(['FRESHER', 'JUNIOR', 'MID', 'SENIOR']),
+  remoteType: z.enum(['ONSITE', 'REMOTE', 'HYBRID']),
+  salaryMin: z.number().positive().optional(),
+  salaryMax: z.number().positive().optional(),
+  salaryCurrency: z.string().length(3).optional(),
+  salaryPeriod: z.enum(['MONTHLY', 'YEARLY']).optional(),
+  status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'ARCHIVED']).optional(),
+  skills: z.array(z.string().min(1)).min(1, 'At least one skill is required'),
+}).refine(
+  (data) => !data.salaryMin || !data.salaryMax || data.salaryMin <= data.salaryMax,
+  {
+    message: 'Minimum salary cannot be greater than maximum salary',
+    path: ['salaryMin'],
+  }
+);
 
 export const jobSearchSchema = z.object({
   query: z.string().optional(),
   location: z.string().optional(),
-  type: z.array(z.enum([JOB_TYPES.FULL_TIME, JOB_TYPES.PART_TIME, JOB_TYPES.CONTRACT, JOB_TYPES.REMOTE])).optional(),
-  salaryRange: z.object({
-    min: z.number().min(0).optional(),
-    max: z.number().min(0).optional(),
-  }).optional(),
-  datePosted: z.enum(['today', 'week', 'month', 'all']).optional(),
+  jobType: z.enum(['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT']).optional(),
+  salaryMin: z.number().positive().optional(),
+  salaryMax: z.number().positive().optional(),
+  sortBy: z.enum(['createdAt', 'salaryMin', 'salaryMax']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.number().min(1).default(1),
-  pageSize: z.number().min(1).max(50).default(20),
+  limit: z.number().min(1).max(50).default(10),
 });
 
 export const jobApplicationSchema = z.object({

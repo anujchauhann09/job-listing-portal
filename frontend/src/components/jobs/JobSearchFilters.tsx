@@ -1,31 +1,51 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { JobSearchFilters as JobSearchFiltersType, JobType } from '@/types/job';
-import { Search, MapPin, Filter, X } from 'lucide-react';
+import { JobSearchFilters as FiltersType } from '@/types/job';
+import { Search, MapPin, SlidersHorizontal, X } from 'lucide-react';
 import { JOB_TYPES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 
 export interface JobSearchFiltersProps {
-  filters: JobSearchFiltersType;
-  onFiltersChange: (filters: JobSearchFiltersType) => void;
+  filters: FiltersType;
+  onFiltersChange: (filters: FiltersType) => void;
   onSearch: () => void;
   loading?: boolean;
 }
 
-const JOB_TYPE_LABELS: Record<JobType, string> = {
-  'full-time': 'Full Time',
-  'part-time': 'Part Time',
-  'contract': 'Contract',
-  'remote': 'Remote',
+const JOB_TYPE_LABELS: Record<string, string> = {
+  FULL_TIME: 'Full Time',
+  PART_TIME: 'Part Time',
+  INTERNSHIP: 'Internship',
+  CONTRACT: 'Contract',
 };
 
-const DATE_POSTED_OPTIONS = [
-  { value: 'all', label: 'All Time' },
-  { value: 'today', label: 'Today' },
-  { value: 'week', label: 'This Week' },
-  { value: 'month', label: 'This Month' },
-] as const;
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+        active
+          ? 'bg-primary-600 text-white border-primary-600'
+          : 'bg-white text-secondary-600 border-secondary-300 hover:border-primary-400 dark:bg-secondary-800 dark:text-secondary-300 dark:border-secondary-600'
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
 export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
   filters,
@@ -33,222 +53,165 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
   onSearch,
   loading = false,
 }) => {
-  const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const updateFilter = <K extends keyof JobSearchFiltersType>(
-    key: K,
-    value: JobSearchFiltersType[K]
-  ) => {
+  const update = <K extends keyof FiltersType>(key: K, value: FiltersType[K]) =>
     onFiltersChange({ ...filters, [key]: value });
-  };
 
-  const toggleJobType = (type: JobType) => {
-    const currentTypes = filters.type || [];
-    const newTypes = currentTypes.includes(type)
-      ? currentTypes.filter(t => t !== type)
-      : [...currentTypes, type];
-    
-    updateFilter('type', newTypes.length > 0 ? newTypes : undefined);
-  };
-
-  const clearFilters = () => {
-    onFiltersChange({});
-  };
+  const clearAll = () =>
+    onFiltersChange({ page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' });
 
   const hasActiveFilters = Boolean(
-    filters.query || 
-    filters.location || 
-    filters.type?.length || 
-    filters.salaryRange?.min || 
-    filters.salaryRange?.max || 
-    (filters.datePosted && filters.datePosted !== 'all')
+    filters.query || filters.location || filters.jobType || filters.salaryMin || filters.salaryMax
   );
 
   return (
-    <div className="space-y-4">
-      {/* Main Search Bar */}
-      <div className="flex gap-3">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-500" />
-          <Input
+    <div className="space-y-3">
+      {/* Search + Location row */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400 pointer-events-none" />
+          <input
             type="text"
-            placeholder="Search jobs, companies, or keywords..."
+            placeholder="Job title or keyword..."
             value={filters.query || ''}
-            onChange={(e) => updateFilter('query', e.target.value)}
-            className="pl-10"
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            onChange={(e) => update('query', e.target.value || undefined)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                update('query', (e.target as HTMLInputElement).value || undefined);
+                onSearch();
+              }
+            }}
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
           />
         </div>
-        
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-500" />
-          <Input
+        <div className="relative sm:w-44">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400 pointer-events-none" />
+          <input
             type="text"
             placeholder="Location"
             value={filters.location || ''}
-            onChange={(e) => updateFilter('location', e.target.value)}
-            className="pl-10 w-48"
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            onChange={(e) => update('location', e.target.value || undefined)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                update('location', (e.target as HTMLInputElement).value || undefined);
+                onSearch();
+              }
+            }}
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
           />
         </div>
-
-        <Button onClick={onSearch} loading={loading}>
+        <Button onClick={onSearch} loading={loading} size="sm" className="shrink-0">
           Search
         </Button>
-
         <Button
           variant="outline"
-          onClick={() => setShowAdvanced(!showAdvanced)}
+          size="sm"
+          className="shrink-0"
+          onClick={() => setShowAdvanced((v) => !v)}
         >
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
+          <SlidersHorizontal className="h-4 w-4" />
         </Button>
       </div>
 
+      {/* Advanced filters */}
       {showAdvanced && (
-        <div className="bg-secondary-50 dark:bg-secondary-800 rounded-lg p-4 space-y-4">
+        <div className="bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4 space-y-4">
+          {/* Job Type */}
           <div>
-            <label className="text-sm font-medium text-secondary-900 dark:text-secondary-100 mb-2 block">
+            <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
               Job Type
-            </label>
+            </p>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(JOB_TYPE_LABELS).map(([type, label]) => (
-                <Badge
-                  key={type}
-                  variant={filters.type?.includes(type as JobType) ? 'default' : 'secondary'}
-                  className="cursor-pointer"
-                  onClick={() => toggleJobType(type as JobType)}
+              {Object.entries(JOB_TYPES).map(([key, value]) => (
+                <FilterChip
+                  key={value}
+                  active={filters.jobType === value}
+                  onClick={() => update('jobType', filters.jobType === value ? undefined : (value as FiltersType['jobType']))}
                 >
-                  {label}
-                </Badge>
+                  {JOB_TYPE_LABELS[key]}
+                </FilterChip>
               ))}
             </div>
           </div>
 
+          {/* Salary */}
           <div>
-            <label className="text-sm font-medium text-secondary-900 dark:text-secondary-100 mb-2 block">
-              Salary Range (USD)
-            </label>
-            <div className="flex gap-3 items-center">
-              <Input
+            <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
+              Salary Range
+            </p>
+            <div className="flex items-center gap-2">
+              <input
                 type="number"
                 placeholder="Min"
-                value={filters.salaryRange?.min || ''}
-                onChange={(e) => updateFilter('salaryRange', {
-                  ...filters.salaryRange,
-                  min: e.target.value ? Number(e.target.value) : undefined
-                })}
-                className="w-32"
+                value={filters.salaryMin || ''}
+                onChange={(e) => update('salaryMin', e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
               />
-              <span className="text-secondary-500">to</span>
-              <Input
+              <span className="text-secondary-400 text-sm shrink-0">–</span>
+              <input
                 type="number"
                 placeholder="Max"
-                value={filters.salaryRange?.max || ''}
-                onChange={(e) => updateFilter('salaryRange', {
-                  ...filters.salaryRange,
-                  max: e.target.value ? Number(e.target.value) : undefined
-                })}
-                className="w-32"
+                value={filters.salaryMax || ''}
+                onChange={(e) => update('salaryMax', e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
               />
             </div>
           </div>
 
+          {/* Sort */}
           <div>
-            <label className="text-sm font-medium text-secondary-900 dark:text-secondary-100 mb-2 block">
-              Date Posted
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {DATE_POSTED_OPTIONS.map(({ value, label }) => (
-                <Badge
-                  key={value}
-                  variant={filters.datePosted === value ? 'default' : 'secondary'}
-                  className="cursor-pointer"
-                  onClick={() => updateFilter('datePosted', value)}
+            <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
+              Sort By
+            </p>
+            <div className="flex gap-2">
+              {(['createdAt', 'salaryMin', 'salaryMax'] as const).map((field) => (
+                <FilterChip
+                  key={field}
+                  active={filters.sortBy === field}
+                  onClick={() => update('sortBy', field)}
                 >
-                  {label}
-                </Badge>
+                  {field === 'createdAt' ? 'Newest' : field === 'salaryMin' ? 'Salary ↑' : 'Salary ↓'}
+                </FilterChip>
               ))}
             </div>
           </div>
-
-          {hasActiveFilters && (
-            <div className="flex justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Clear All Filters
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
+      {/* Active filter pills */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {filters.query && (
-            <Badge variant="outline">
-              Search: {filters.query}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => updateFilter('query', undefined)}
-              />
-            </Badge>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+              "{filters.query}"
+              <button onClick={() => update('query', undefined)}><X className="h-3 w-3" /></button>
+            </span>
           )}
           {filters.location && (
-            <Badge variant="outline">
-              Location: {filters.location}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => updateFilter('location', undefined)}
-              />
-            </Badge>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+              📍 {filters.location}
+              <button onClick={() => update('location', undefined)}><X className="h-3 w-3" /></button>
+            </span>
           )}
-          {filters.type?.map(type => (
-            <Badge key={type} variant="outline">
-              {JOB_TYPE_LABELS[type]}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => toggleJobType(type)}
-              />
-            </Badge>
-          ))}
-          {filters.salaryRange?.min && (
-            <Badge variant="outline">
-              Min: ${filters.salaryRange.min.toLocaleString()}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => updateFilter('salaryRange', {
-                  ...filters.salaryRange,
-                  min: undefined
-                })}
-              />
-            </Badge>
+          {filters.jobType && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+              {JOB_TYPE_LABELS[filters.jobType]}
+              <button onClick={() => update('jobType', undefined)}><X className="h-3 w-3" /></button>
+            </span>
           )}
-          {filters.salaryRange?.max && (
-            <Badge variant="outline">
-              Max: ${filters.salaryRange.max.toLocaleString()}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => updateFilter('salaryRange', {
-                  ...filters.salaryRange,
-                  max: undefined
-                })}
-              />
-            </Badge>
+          {(filters.salaryMin || filters.salaryMax) && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+              ${filters.salaryMin?.toLocaleString() ?? '0'} – ${filters.salaryMax?.toLocaleString() ?? '∞'}
+              <button onClick={() => { update('salaryMin', undefined); update('salaryMax', undefined); }}><X className="h-3 w-3" /></button>
+            </span>
           )}
-          {filters.datePosted && filters.datePosted !== 'all' && (
-            <Badge variant="outline">
-              {DATE_POSTED_OPTIONS.find(opt => opt.value === filters.datePosted)?.label}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer" 
-                onClick={() => updateFilter('datePosted', 'all')}
-              />
-            </Badge>
-          )}
+          <button
+            onClick={clearAll}
+            className="text-xs text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300 underline"
+          >
+            Clear all
+          </button>
         </div>
       )}
     </div>

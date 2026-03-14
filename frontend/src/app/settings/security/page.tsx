@@ -1,11 +1,3 @@
 'use client';
-
-import { SettingsLayout, SecuritySettings } from '@/components/settings';
-
-export default function SecuritySettingsPage() {
-  return (
-    <SettingsLayout>
-      <SecuritySettings />
-    </SettingsLayout>
-  );
-}
+import { redirect } from 'next/navigation';
+export default function Page() { redirect('/settings'); }

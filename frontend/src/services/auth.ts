@@ -76,6 +76,10 @@ export class AuthService {
       data
     );
   }
+
+  async deleteAccount(): Promise<ApiResponse<null>> {
+    return apiClient.delete<null>('/auth/account');
+  }
 }
 
 export const authService = new AuthService();

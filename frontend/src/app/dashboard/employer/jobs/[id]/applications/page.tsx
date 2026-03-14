@@ -10,19 +10,18 @@ import { ApplicationStatus } from '@/types/job';
 import { ArrowLeft } from 'lucide-react';
 
 interface JobApplicationsPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default function JobApplicationsPage({ params }: JobApplicationsPageProps) {
+  const { id } = React.use(params);
   const router = useRouter();
   const {
     applications,
     loading,
     error,
     updateApplicationStatus,
-  } = useApplications({ jobId: params.id });
+  } = useApplications({ jobId: id });
 
   const handleStatusChange = async (applicationId: string, newStatus: ApplicationStatus) => {
     try {

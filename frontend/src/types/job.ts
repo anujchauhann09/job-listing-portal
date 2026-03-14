@@ -1,8 +1,38 @@
-export type JobType = 'full-time' | 'part-time' | 'contract' | 'remote';
-export type JobStatus = 'active' | 'closed' | 'draft';
-export type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
+// Backend enum values
+export type JobType = 'FULL_TIME' | 'PART_TIME' | 'INTERNSHIP' | 'CONTRACT';
+export type ExperienceLevel = 'FRESHER' | 'JUNIOR' | 'MID' | 'SENIOR';
+export type RemoteType = 'ONSITE' | 'REMOTE' | 'HYBRID';
+export type SalaryPeriod = 'MONTHLY' | 'YEARLY';
+export type JobStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'ARCHIVED';
+export type ApplicationStatus = 'APPLIED' | 'SHORTLISTED' | 'REJECTED' | 'HIRED' | 'WITHDRAWN';
 
 export interface Job {
+  uuid: string;
+  title: string;
+  description?: string;
+  qualifications?: string;
+  responsibilities?: string;
+  location: string;
+  jobType: JobType;
+  experienceLevel: ExperienceLevel;
+  remoteType: RemoteType;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryCurrency?: string;
+  salaryPeriod?: SalaryPeriod;
+  status?: JobStatus;
+  skills: Array<{ skill: { name: string } }>;
+  employer?: {
+    companyName: string;
+    companyLogoUrl?: string;
+    industry: string;
+  };
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// For backward compatibility with existing components
+export interface JobLegacy {
   id: string;
   title: string;
   description: string;
@@ -46,12 +76,20 @@ export interface JobApplication {
 export interface JobSearchFilters {
   query?: string;
   location?: string;
-  type?: JobType[];
-  salaryRange?: {
-    min?: number;
-    max?: number;
-  };
-  datePosted?: 'today' | 'week' | 'month' | 'all';
+  jobType?: JobType;
+  salaryMin?: number;
+  salaryMax?: number;
+  page?: number;
+  limit?: number;
+  sortBy?: 'createdAt' | 'salaryMin' | 'salaryMax';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface JobsResponse {
+  jobs: Job[];
+  total?: number;
+  page?: number;
+  limit?: number;
 }
 
 export interface SearchResults<T> {

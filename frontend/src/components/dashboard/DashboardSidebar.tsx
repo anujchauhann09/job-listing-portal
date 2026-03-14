@@ -16,8 +16,6 @@ import {
   Search,
   PlusCircle,
   Users,
-  BarChart3,
-  BookmarkIcon,
   X,
 } from 'lucide-react';
 
@@ -56,13 +54,6 @@ const navigationItems: NavItem[] = [
     description: 'Search and browse job opportunities',
   },
   {
-    name: 'Saved Jobs',
-    href: '/dashboard/saved-jobs',
-    icon: BookmarkIcon,
-    roles: ['job-seeker'],
-    description: 'View your saved job listings',
-  },
-  {
     name: 'My Applications',
     href: '/dashboard/applications',
     icon: FileText,
@@ -71,7 +62,7 @@ const navigationItems: NavItem[] = [
   },
   {
     name: 'Post Job',
-    href: '/jobs/post',
+    href: '/dashboard/employer/jobs/new',
     icon: PlusCircle,
     roles: ['employer'],
     description: 'Create a new job posting',
@@ -89,13 +80,6 @@ const navigationItems: NavItem[] = [
     icon: Users,
     roles: ['employer'],
     description: 'Review candidate applications',
-  },
-  {
-    name: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    roles: ['employer'],
-    description: 'View hiring analytics and metrics',
   },
   {
     name: 'Settings',

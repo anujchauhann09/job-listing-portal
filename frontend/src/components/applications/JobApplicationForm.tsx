@@ -99,11 +99,13 @@ export function JobApplicationForm({
             {job.title}
           </h3>
           <p className="text-sm text-secondary-600 dark:text-secondary-400">
-            {job.employer.companyName} • {job.location}
+            {job.employer?.companyName} • {job.location}
           </p>
-          {job.salaryRange && (
+          {(job.salaryMin || job.salaryMax) && (
             <p className="text-sm text-secondary-600 dark:text-secondary-400 mt-1">
-              {job.salaryRange.currency} {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
+              {job.salaryCurrency ?? 'USD'}{' '}
+              {job.salaryMin?.toLocaleString() ?? '?'} – {job.salaryMax?.toLocaleString() ?? '?'}
+              {job.salaryPeriod ? ` / ${job.salaryPeriod}` : ''}
             </p>
           )}
         </div>
@@ -212,7 +214,7 @@ export function JobApplicationForm({
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-secondary-200 dark:border-secondary-700 sticky bottom-0 bg-white dark:bg-secondary-900 -mx-6 px-6 pb-0 mt-6">
             <Button
               type="button"
               variant="outline"

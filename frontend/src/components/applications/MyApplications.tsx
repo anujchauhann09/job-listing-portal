@@ -30,40 +30,40 @@ interface MyApplicationsProps {
 }
 
 const statusConfig = {
-  pending: {
-    label: 'Pending Review',
+  APPLIED: {
+    label: 'Applied',
     variant: 'secondary' as const,
     icon: Clock,
     color: 'text-secondary-600 dark:text-secondary-400',
-    description: 'Your application is being reviewed'
+    description: 'Your application is being reviewed',
   },
-  reviewed: {
-    label: 'Under Review',
-    variant: 'primary' as const,
-    icon: Eye,
-    color: 'text-primary-600 dark:text-primary-400',
-    description: 'Employer is reviewing your application'
-  },
-  shortlisted: {
+  SHORTLISTED: {
     label: 'Shortlisted',
     variant: 'success' as const,
     icon: Star,
     color: 'text-success-600 dark:text-success-400',
-    description: 'Congratulations! You\'ve been shortlisted'
+    description: "Congratulations! You've been shortlisted",
   },
-  rejected: {
+  REJECTED: {
     label: 'Not Selected',
     variant: 'error' as const,
     icon: XCircle,
     color: 'text-error-600 dark:text-error-400',
-    description: 'Unfortunately, you were not selected'
+    description: 'Unfortunately, you were not selected',
   },
-  hired: {
+  HIRED: {
     label: 'Hired',
     variant: 'success' as const,
     icon: CheckCircle,
     color: 'text-success-600 dark:text-success-400',
-    description: 'Congratulations! You got the job'
+    description: 'Congratulations! You got the job',
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    variant: 'secondary' as const,
+    icon: XCircle,
+    color: 'text-secondary-500 dark:text-secondary-500',
+    description: 'You withdrew this application',
   },
 };
 
@@ -87,11 +87,11 @@ export function MyApplications({
 
   const getStatusCounts = () => {
     return {
-      pending: applications.filter(app => app.status === 'pending').length,
-      reviewed: applications.filter(app => app.status === 'reviewed').length,
-      shortlisted: applications.filter(app => app.status === 'shortlisted').length,
-      rejected: applications.filter(app => app.status === 'rejected').length,
-      hired: applications.filter(app => app.status === 'hired').length,
+      APPLIED: applications.filter(app => app.status === 'APPLIED').length,
+      SHORTLISTED: applications.filter(app => app.status === 'SHORTLISTED').length,
+      HIRED: applications.filter(app => app.status === 'HIRED').length,
+      REJECTED: applications.filter(app => app.status === 'REJECTED').length,
+      WITHDRAWN: applications.filter(app => app.status === 'WITHDRAWN').length,
     };
   };
 
@@ -172,17 +172,17 @@ export function MyApplications({
                       <div className="flex items-center space-x-4 text-sm text-secondary-600 dark:text-secondary-400 mt-1">
                         <div className="flex items-center space-x-1">
                           <Building className="h-4 w-4" />
-                          <span>{job?.employer.companyName || 'Company'}</span>
+                          <span>{job?.employer?.companyName || 'Company'}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <MapPin className="h-4 w-4" />
                           <span>{job?.location || 'Location'}</span>
                         </div>
-                        {job?.salaryRange && (
+                        {job?.salaryMin && job?.salaryMax && (
                           <div className="flex items-center space-x-1">
                             <DollarSign className="h-4 w-4" />
                             <span>
-                              {job.salaryRange.currency} {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
+                              {job.salaryCurrency} {job.salaryMin.toLocaleString()} - {job.salaryMax.toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -245,7 +245,7 @@ export function MyApplications({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onViewJob(job.id)}
+                      onClick={() => onViewJob(job.uuid)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View Job
@@ -254,7 +254,7 @@ export function MyApplications({
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  {application.status === 'pending' && onWithdraw && (
+                  {application.status === 'APPLIED' && onWithdraw && (
                     <Button
                       variant="ghost"
                       size="sm"
