@@ -62,6 +62,12 @@ export class AuthService {
     return apiClient.get<User>('/auth/me');
   }
 
+  // Called after OAuth redirect — sends the token through the Next.js proxy
+  // so the backend can set httpOnly cookies on the frontend domain
+  async exchangeOAuthSession(accessToken: string): Promise<ApiResponse<{ user: User }>> {
+    return apiClient.post<{ user: User }>('/auth/session', { accessToken });
+  }
+
   async resetPassword(
     data: PasswordResetFormData
   ): Promise<ApiResponse<{ message: string }>> {

@@ -9,6 +9,7 @@ const {
   clearAuthCookies,
   tokenCookieOptions,
 } = require("@/utils/authCookies.util");
+const { verifyToken } = require("@/utils/jwt.util");
 
 const register = async (req, res, next) => {
   try {
@@ -122,6 +123,68 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
+// Called by the frontend after OAuth redirect to set cookies on the frontend domain
+// The access token from the redirect URL is passed in the body, verified, then
+// cookies are set on this response which travels through the Next.js proxy
+const exchangeOAuthSession = async (req, res, next) => {
+  try {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      throw new AppException({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: 'Access token is required',
+      });
+    }
+
+    // Verify the token is valid (throws if not)
+    const payload = verifyToken(accessToken);
+
+    // Get the full user record (includes id needed for refresh token)
+    const AuthRepository = require('./auth.repository');
+    const authRepo = new AuthRepository();
+    const dbUser = await authRepo.findUserByUuid(payload.sub);
+
+    if (!dbUser) {
+      throw new AppException({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: 'User not found',
+      });
+    }
+
+    // Issue a fresh refresh token
+    const { generateRefreshToken } = require("@/utils/jwt.util");
+    const { getExpiryDate } = require("@/utils/time.util");
+    const { REFRESH_TOKEN_EXPIRES_IN } = require("@/config/jwt.config");
+
+    const refreshToken = generateRefreshToken({ sub: payload.sub, roleId: payload.roleId });
+    await authRepo.saveRefreshToken({
+      token: refreshToken,
+      userId: dbUser.id,
+      expiresAt: getExpiryDate(REFRESH_TOKEN_EXPIRES_IN),
+    });
+
+    // Set cookies — this response goes through the Next.js proxy so cookies
+    // land on the frontend domain
+    setAuthCookies(res, { accessToken, refreshToken });
+
+    const user = {
+      uuid: dbUser.uuid,
+      email: dbUser.email,
+      name: dbUser.profile?.name || null,
+      role: dbUser.role.name,
+    };
+
+    return new ApiResponse({
+      success: true,
+      message: AUTH_MESSAGES.LOGIN_SUCCESS,
+      data: { user },
+    }).send(res, HTTP_STATUS.OK);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -129,4 +192,5 @@ module.exports = {
   logout,
   getMe,
   deleteAccount,
+  exchangeOAuthSession,
 };

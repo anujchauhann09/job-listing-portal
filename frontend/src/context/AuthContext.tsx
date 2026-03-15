@@ -212,12 +212,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Used after OAuth flow where user state isn't set yet
+  // Used after OAuth flow — POSTs the token through the proxy so cookies
+  // are set on the frontend domain
   const loginWithSession = useCallback(async (bearerToken?: string) => {
     try {
-      const response = await authService.getCurrentUser(bearerToken);
+      const response = bearerToken
+        ? await authService.exchangeOAuthSession(bearerToken)
+        : await authService.getCurrentUser();
+
       if (response.success && response.data) {
-        const newUser = buildUser(response.data);
+        const userData = (response.data as any).user ?? response.data;
+        const newUser = buildUser(userData);
         sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(newUser));
         setUser(newUser);
         return newUser;

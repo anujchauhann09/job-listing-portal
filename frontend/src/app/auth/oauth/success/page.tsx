@@ -25,6 +25,8 @@ function OAuthSuccessContent() {
           return;
         }
 
+        // Exchange the token through the proxy — this sets httpOnly cookies
+        // on the frontend domain (the backend redirect sets them on the backend domain)
         await loginWithSession(token);
 
         router.push(ROUTES.HOME);
