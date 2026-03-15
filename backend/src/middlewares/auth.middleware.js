@@ -6,7 +6,15 @@ const { ROLES } = require('@/modules/auth/auth.constants');
 
 const authenticate = (req, res, next) => {
   try {
-    const token = req.cookies.accessToken;
+    // Accept token from cookie first, then Authorization header as fallback
+    let token = req.cookies.accessToken;
+
+    if (!token) {
+      const authHeader = req.headers['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.slice(7);
+      }
+    }
     
     if (!token) {
       throw new AppException({

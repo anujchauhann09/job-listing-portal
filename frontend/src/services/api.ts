@@ -60,8 +60,8 @@ export class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', ...options });
   }
 
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {

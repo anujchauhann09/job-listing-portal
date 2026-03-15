@@ -53,7 +53,12 @@ export class AuthService {
     return res;
   }
 
-  async getCurrentUser(): Promise<ApiResponse<User>> {
+  async getCurrentUser(bearerToken?: string): Promise<ApiResponse<User>> {
+    if (bearerToken) {
+      return apiClient.get<User>('/auth/me', {
+        headers: { 'Authorization': `Bearer ${bearerToken}` },
+      });
+    }
     return apiClient.get<User>('/auth/me');
   }
 

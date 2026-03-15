@@ -70,6 +70,12 @@ async function proxyRequest(
     headers['Cookie'] = cookieHeader;
   }
 
+  // Forward Authorization header if present (used for OAuth token exchange)
+  const authHeader = request.headers.get('authorization');
+  if (authHeader) {
+    headers['Authorization'] = authHeader;
+  }
+
   if (!isMultipart) {
     headers['Content-Type'] = 'application/json';
   }

@@ -57,7 +57,7 @@ export interface AuthContextType {
   updateProfile: (profile: Partial<JobSeekerProfile | EmployerProfile>) => Promise<User>;
   clearError: () => void;
   refreshUser: () => Promise<User | undefined>;
-  loginWithSession: () => Promise<User | undefined>;
+  loginWithSession: (bearerToken?: string) => Promise<User | undefined>;
   isAuthenticated: boolean;
   isJobSeeker: boolean;
   isEmployer: boolean;

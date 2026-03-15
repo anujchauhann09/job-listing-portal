@@ -213,9 +213,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Used after OAuth flow where user state isn't set yet
-  const loginWithSession = useCallback(async () => {
+  const loginWithSession = useCallback(async (bearerToken?: string) => {
     try {
-      const response = await authService.getCurrentUser();
+      const response = await authService.getCurrentUser(bearerToken);
       if (response.success && response.data) {
         const newUser = buildUser(response.data);
         sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(newUser));

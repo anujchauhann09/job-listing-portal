@@ -25,7 +25,7 @@ function OAuthSuccessContent() {
           return;
         }
 
-        await loginWithSession();
+        await loginWithSession(token);
 
         router.push(ROUTES.HOME);
       } catch (error) {
