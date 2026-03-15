@@ -1,5 +1,5 @@
 const prisma = require("@/config/prisma");
-const USER_TYPES = require('./oauth.constants');
+const { USER_TYPES } = require('./oauth.constants');
 
 class OAuthRepository {
   findOAuthAccount(provider, providerUserId) {
