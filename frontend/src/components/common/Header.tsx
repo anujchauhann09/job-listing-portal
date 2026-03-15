@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Menu, X, User, LogOut, Settings, Briefcase } from 'lucide-react';
 import { APP_NAME, ROUTES } from '@/lib/constants';
-import { useKeyboardNavigation, useScreenReader } from '@/hooks/useAccessibility';
-import { KeyboardNavigable, NavigableItem } from '@/components/ui/KeyboardNavigable';
+import { useScreenReader } from '@/hooks/useAccessibility';
 
 interface HeaderProps {
   user?: {
@@ -266,7 +265,7 @@ export function Header({ user, onLogout, className }: HeaderProps) {
               variant="ghost"
               size="sm"
               onClick={toggleMobileMenu}
-              className="lg:hidden h-9 w-9 p-0"
+              className="lg:hidden h-10 w-10 p-0"
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"

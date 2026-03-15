@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { User } from '@/types/auth';
 import { ROUTES } from '@/lib/constants';
-import { useKeyboardNavigation, useScreenReader } from '@/hooks/useAccessibility';
+import { useScreenReader } from '@/hooks/useAccessibility';
 import {
   LayoutDashboard,
   User as UserIcon,
@@ -141,7 +141,7 @@ export function DashboardSidebar({ user, isOpen, onToggle }: DashboardSidebarPro
       <aside
         ref={sidebarRef}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-secondary-800 border-r border-secondary-200 dark:border-secondary-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-secondary-800 border-r border-secondary-200 dark:border-secondary-700 transform transition-transform duration-300 ease-in-out will-change-transform lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         role="navigation"
@@ -169,7 +169,7 @@ export function DashboardSidebar({ user, isOpen, onToggle }: DashboardSidebarPro
             </div>
             <button
               onClick={onToggle}
-              className="lg:hidden p-1 rounded-md text-secondary-400 hover:text-secondary-500 hover:bg-secondary-100 dark:hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="lg:hidden p-2 rounded-md text-secondary-400 hover:text-secondary-500 hover:bg-secondary-100 dark:hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Close sidebar"
             >
               <X className="w-5 h-5" aria-hidden="true" />

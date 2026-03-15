@@ -53,7 +53,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
+    <div className="min-h-screen min-h-dvh bg-secondary-50 dark:bg-secondary-900">
       <a
         href="#main-content"
         onClick={(e) => {

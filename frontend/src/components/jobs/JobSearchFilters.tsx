@@ -36,7 +36,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+        'px-3 py-2 rounded-full text-xs font-medium border transition-all min-h-[36px]',
         active
           ? 'bg-primary-600 text-white border-primary-600'
           : 'bg-white text-secondary-600 border-secondary-300 hover:border-primary-400 dark:bg-secondary-800 dark:text-secondary-300 dark:border-secondary-600'
@@ -67,7 +67,6 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Search + Location row */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400 pointer-events-none" />
@@ -82,7 +81,7 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
                 onSearch();
               }
             }}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
+            className="w-full pl-9 pr-3 py-2.5 text-base rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
           />
         </div>
         <div className="relative sm:w-44">
@@ -98,7 +97,7 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
                 onSearch();
               }
             }}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
+            className="w-full pl-9 pr-3 py-2.5 text-base rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100 dark:placeholder:text-secondary-500"
           />
         </div>
         <Button onClick={onSearch} loading={loading} size="sm" className="shrink-0">
@@ -114,10 +113,8 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
         </Button>
       </div>
 
-      {/* Advanced filters */}
       {showAdvanced && (
         <div className="bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4 space-y-4">
-          {/* Job Type */}
           <div>
             <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
               Job Type
@@ -135,7 +132,6 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
             </div>
           </div>
 
-          {/* Salary */}
           <div>
             <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
               Salary Range
@@ -146,7 +142,7 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
                 placeholder="Min"
                 value={filters.salaryMin || ''}
                 onChange={(e) => update('salaryMin', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
+                className="w-full px-3 py-2.5 text-base rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
               />
               <span className="text-secondary-400 text-sm shrink-0">–</span>
               <input
@@ -154,12 +150,11 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
                 placeholder="Max"
                 value={filters.salaryMax || ''}
                 onChange={(e) => update('salaryMax', e.target.value ? Number(e.target.value) : undefined)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
+                className="w-full px-3 py-2.5 text-base rounded-lg border border-secondary-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-100"
               />
             </div>
           </div>
 
-          {/* Sort */}
           <div>
             <p className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase tracking-wide mb-2">
               Sort By
@@ -179,7 +174,6 @@ export const JobSearchFilters: React.FC<JobSearchFiltersProps> = ({
         </div>
       )}
 
-      {/* Active filter pills */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2">
           {filters.query && (

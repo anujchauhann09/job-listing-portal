@@ -97,7 +97,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm"
       onClick={handleOverlayClick}
       role="presentation"
     >
@@ -106,8 +106,9 @@ const Modal: React.FC<ModalProps> = ({
         restoreFocus={restoreFocus}
         initialFocus={initialFocus}
         className={cn(
-          'relative w-full rounded-xl border border-secondary-200 bg-white shadow-medium dark:border-secondary-800 dark:bg-secondary-900 flex flex-col max-h-[90vh]',
-          sizes[size],
+          'relative w-full rounded-t-2xl sm:rounded-xl border border-secondary-200 bg-white shadow-medium dark:border-secondary-800 dark:bg-secondary-900 flex flex-col',
+          'max-h-[92dvh] sm:max-h-[90vh]',
+          'sm:' + sizes[size],
           className
         )}
       >
@@ -143,7 +144,7 @@ const Modal: React.FC<ModalProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="h-8 w-8 p-0"
+                  className="h-10 w-10 p-0 shrink-0"
                   aria-label="Close dialog"
                 >
                   <X className="h-4 w-4" />

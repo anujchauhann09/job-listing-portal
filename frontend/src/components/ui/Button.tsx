@@ -36,9 +36,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 text-base',
-      lg: 'h-12 px-6 text-lg',
+      sm: 'h-9 px-3 text-sm min-w-[2.25rem]',
+      md: 'h-10 px-4 text-base min-w-[2.5rem]',
+      lg: 'h-12 px-6 text-lg min-w-[3rem]',
     };
 
     const classes = cn(
@@ -50,7 +50,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const isDisabled = disabled || loading;
 
-    // Handle keyboard activation
     const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if ((event.key === 'Enter' || event.key === ' ') && !isDisabled) {
         event.preventDefault();
@@ -65,7 +64,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className: cn(child.props?.className, classes),
         ref,
         'aria-disabled': isDisabled,
-        // Don't pass event handlers to avoid SSR issues with Link components
       });
     }
 

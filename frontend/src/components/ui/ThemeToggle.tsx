@@ -20,7 +20,7 @@ export function ThemeToggle({ variant = 'button', className }: ThemeToggleProps)
         variant="ghost"
         size="sm"
         onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-        className={cn('w-9 h-9 p-0', className)}
+        className={cn('w-10 h-10 p-0', className)}
         aria-label="Toggle theme"
       >
         {resolvedTheme === 'dark' ? (

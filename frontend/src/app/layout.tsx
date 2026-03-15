@@ -29,6 +29,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#6366f1" },
     { media: "(prefers-color-scheme: dark)", color: "#4f46e5" },
@@ -55,7 +57,6 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </ThemeProvider>
-        {/* Live region for screen reader announcements */}
         <div
           id="announcements"
           aria-live="polite"
