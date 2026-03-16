@@ -63,50 +63,6 @@ export default function HelpCenterPage() {
         { title: 'Contacting candidates', link: '#' },
       ],
     },
-    {
-      icon: Shield,
-      title: 'Account & Security',
-      description: 'Keep your account safe and secure',
-      color: 'error',
-      articles: [
-        { title: 'Changing your password', link: '#' },
-        { title: 'Two-factor authentication', link: '#' },
-        { title: 'Managing login sessions', link: '#' },
-        { title: 'Account privacy settings', link: '#' },
-      ],
-    },
-    {
-      icon: CreditCard,
-      title: 'Billing & Payments',
-      description: 'Manage subscriptions and payments',
-      color: 'info',
-      articles: [
-        { title: 'Pricing plans explained', link: '#' },
-        { title: 'Updating payment methods', link: '#' },
-        { title: 'Refund policy', link: '#' },
-        { title: 'Billing FAQs', link: '#' },
-      ],
-    },
-    {
-      icon: Settings,
-      title: 'Settings & Preferences',
-      description: 'Customize your experience',
-      color: 'secondary',
-      articles: [
-        { title: 'Notification settings', link: '#' },
-        { title: 'Email preferences', link: '#' },
-        { title: 'Privacy controls', link: '#' },
-        { title: 'Deleting your account', link: '#' },
-      ],
-    },
-  ];
-
-  const popularArticles = [
-    { title: 'How do I reset my password?', views: '15.2K', link: '#' },
-    { title: 'What are the different subscription plans?', views: '12.8K', link: '#' },
-    { title: 'How to make my profile stand out?', views: '10.5K', link: '#' },
-    { title: 'Can I edit a job posting after publishing?', views: '9.3K', link: '#' },
-    { title: 'How do I withdraw a job application?', views: '8.7K', link: '#' },
   ];
 
   const getColorClasses = (color: string) => {
@@ -198,46 +154,6 @@ export default function HelpCenterPage() {
                   </Card>
                 );
               })}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 bg-secondary-50 dark:bg-secondary-800">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center mb-8">
-                <BookOpen className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
-                <h2 className="text-3xl font-bold text-secondary-900 dark:text-secondary-100">
-                  Popular Articles
-                </h2>
-              </div>
-
-              <Card className="divide-y divide-secondary-200 dark:divide-secondary-700">
-                {popularArticles.map((article, index) => (
-                  <a
-                    key={index}
-                    href={article.link}
-                    className="flex items-center justify-between p-4 hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <span className="text-secondary-900 dark:text-secondary-100 font-medium">
-                        {article.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm text-secondary-500 dark:text-secondary-400">
-                        {article.views} views
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-secondary-400" />
-                    </div>
-                  </a>
-                ))}
-              </Card>
             </div>
           </div>
         </section>
