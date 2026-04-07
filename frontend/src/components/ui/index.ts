@@ -19,10 +19,8 @@ export type { ConfirmDialogProps } from './ConfirmDialog';
 export { ThemeToggle, useThemeAwareStyle } from './ThemeToggle';
 export { Container, ResponsiveGrid, ResponsiveStack } from './Container';
 export { Progress } from './Progress';
-export type { ProgressProps } from './Progress';
 
-export { Loading, Skeleton, CardSkeleton, ListSkeleton, TableSkeleton } from './Loading';
-export type { LoadingProps, SkeletonProps } from './Loading';
+export { Loading, LoadingSpinner, PageLoading } from './Loading';
 
 export { ErrorDisplay, NetworkStatus, EmptyState } from './ErrorDisplay';
 export type { ErrorDisplayProps, NetworkStatusProps, EmptyStateProps } from './ErrorDisplay';
