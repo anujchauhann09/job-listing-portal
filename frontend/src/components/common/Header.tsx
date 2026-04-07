@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { Menu, X, User, LogOut, Settings, Briefcase } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, Briefcase, ChevronDown } from 'lucide-react';
 import { APP_NAME, ROUTES } from '@/lib/constants';
 import { useScreenReader } from '@/hooks/useAccessibility';
 
@@ -15,11 +15,7 @@ interface HeaderProps {
     id: string;
     email: string;
     role: 'job-seeker' | 'employer';
-    profile: {
-      firstName?: string;
-      lastName?: string;
-      companyName?: string;
-    };
+    profile: { firstName?: string; lastName?: string; companyName?: string };
   } | null;
   onLogout?: () => void;
   className?: string;
@@ -29,21 +25,18 @@ export function Header({ user, onLogout, className }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { announce } = useScreenReader();
   const mobileMenuRef = React.useRef<HTMLDivElement>(null);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => {
-    const newState = !isMobileMenuOpen;
-    setIsMobileMenuOpen(newState);
-    announce(newState ? 'Mobile menu opened' : 'Mobile menu closed');
+    const next = !isMobileMenuOpen;
+    setIsMobileMenuOpen(next);
+    announce(next ? 'Mobile menu opened' : 'Mobile menu closed');
   };
 
-  const toggleUserMenu = () => {
-    const newState = !isUserMenuOpen;
-    setIsUserMenuOpen(newState);
-    announce(newState ? 'User menu opened' : 'User menu closed');
-  };
+  const toggleUserMenu = () => setIsUserMenuOpen(v => !v);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -53,292 +46,192 @@ export function Header({ user, onLogout, className }: HeaderProps) {
 
   const getUserDisplayName = () => {
     if (!user) return '';
-    
-    if (user.role === 'job-seeker') {
-      const jobSeekerProfile = user.profile as any;
-      if (jobSeekerProfile.firstName && jobSeekerProfile.firstName.trim()) {
-        return jobSeekerProfile.firstName;
-      }
-    }
-    
-    if (user.role === 'employer') {
-      const employerProfile = user.profile as any;
-      if (employerProfile.companyName && employerProfile.companyName.trim()) {
-        return employerProfile.companyName;
-      }
-    }
-    
+    const p = user.profile as any;
+    if (user.role === 'job-seeker' && p.firstName?.trim()) return p.firstName;
+    if (user.role === 'employer' && p.companyName?.trim()) return p.companyName;
     return user.email;
   };
 
-  const getDashboardPath = () => {
-    if (!user) return ROUTES.LOGIN;
-    return user.role === 'job-seeker' ? ROUTES.DASHBOARD_JOB_SEEKER : ROUTES.DASHBOARD_EMPLOYER;
-  };
+  const getDashboardPath = () =>
+    user?.role === 'job-seeker' ? ROUTES.DASHBOARD_JOB_SEEKER : ROUTES.DASHBOARD_EMPLOYER;
+
+  const isActive = (href: string) => pathname === href;
 
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node))
         setIsMobileMenuOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node))
         setIsUserMenuOpen(false);
-      }
     };
-
-    if (isMobileMenuOpen || isUserMenuOpen) {
+    if (isMobileMenuOpen || isUserMenuOpen)
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, isUserMenuOpen]);
 
   React.useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (isMobileMenuOpen) {
-          setIsMobileMenuOpen(false);
-          announce('Mobile menu closed');
-        }
-        if (isUserMenuOpen) {
-          setIsUserMenuOpen(false);
-          announce('User menu closed');
-        }
-      }
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setIsMobileMenuOpen(false); setIsUserMenuOpen(false); }
     };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isMobileMenuOpen, isUserMenuOpen, announce]);
+  }, []);
 
-  const userMenuItems = user ? [
-    {
-      label: 'Dashboard',
-      value: 'dashboard',
-      onClick: () => handleNavigation(getDashboardPath()),
-      icon: Briefcase,
-    },
-    {
-      label: 'Profile',
-      value: 'profile',
-      onClick: () => handleNavigation(ROUTES.PROFILE),
-      icon: User,
-    },
-    {
-      label: 'Settings',
-      value: 'settings',
-      onClick: () => handleNavigation(ROUTES.SETTINGS),
-      icon: Settings,
-    },
-    {
-      label: 'Sign out',
-      value: 'logout',
-      onClick: onLogout,
-      icon: LogOut,
-    },
-  ] : [];
+  const navLinks = [
+    { label: 'Find Jobs', href: ROUTES.JOBS, roles: ['job-seeker', null] as const },
+    { label: 'Resume Analyzer', href: ROUTES.RESUME_ANALYZER, roles: ['job-seeker', 'employer', null] as const },
+    { label: 'Post Job', href: '/dashboard/employer/jobs/new', roles: ['employer'] as const },
+    { label: 'Hiring Solutions', href: ROUTES.HIRING_SOLUTIONS, roles: ['employer'] as const },
+    { label: 'About', href: ROUTES.ABOUT, roles: ['job-seeker', 'employer', null] as const },
+  ].filter((l) => (l.roles as ReadonlyArray<string | null>).includes(user?.role ?? null));
 
   return (
-    <header 
+    <header
       className={cn(
-        'sticky top-0 z-50 w-full border-b border-secondary-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-secondary-800 dark:bg-secondary-900/95 dark:supports-[backdrop-filter]:bg-secondary-900/60',
+        'sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/95 backdrop-blur-sm dark:border-[#1F2937] dark:bg-[#0B0F19]/95',
         className
       )}
       role="banner"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 sm:h-16 items-center justify-between">
-          <div className="flex items-center">
-            <Link 
-              href={ROUTES.HOME}
-              className="flex items-center space-x-2 text-lg sm:text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
-              aria-label={`${APP_NAME} - Go to homepage`}
-            >
-              <Briefcase className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
-              <span className="hidden xs:inline">{APP_NAME}</span>
-            </Link>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 items-center justify-between gap-4">
 
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8" role="navigation" aria-label="Main navigation">
-            <Link
-              href={ROUTES.JOBS}
-              className="text-secondary-700 hover:text-primary-600 font-medium transition-colors dark:text-secondary-300 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
-            >
-              Find Jobs
-            </Link>
-            {user?.role === 'employer' && (
-              <>
-                <Link
-                  href="/dashboard/employer/jobs/new"
-                  className="text-secondary-700 hover:text-primary-600 font-medium transition-colors dark:text-secondary-300 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
-                >
-                  Post Job
-                </Link>
-                <Link
-                  href={ROUTES.HIRING_SOLUTIONS}
-                  className="text-secondary-700 hover:text-primary-600 font-medium transition-colors dark:text-secondary-300 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
-                >
-                  Hiring Solutions
-                </Link>
-              </>
-            )}
-            <Link
-              href={ROUTES.ABOUT}
-              className="text-secondary-700 hover:text-primary-600 font-medium transition-colors dark:text-secondary-300 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
-            >
-              About
-            </Link>
+          <Link
+            href={ROUTES.HOME}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-md shrink-0"
+            aria-label={`${APP_NAME} — homepage`}
+          >
+            <div className="w-7 h-7 bg-[#2563EB] rounded-lg flex items-center justify-center">
+              <Briefcase className="h-4 w-4 text-white" aria-hidden="true" />
+            </div>
+            <span className="hidden xs:inline text-[15px] font-bold tracking-tight text-[#0F172A] dark:text-[#E5E7EB]">
+              {APP_NAME}
+            </span>
+          </Link>
+
+          <nav className="hidden lg:flex items-center gap-1" role="navigation" aria-label="Main navigation">
+            {navLinks.map((link: any) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+                  isActive(link.href)
+                    ? 'text-[#2563EB] bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 dark:text-[#60A5FA]'
+                    : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB] dark:hover:bg-[#1F2937]'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center gap-2">
             <ThemeToggle variant="compact" />
 
             {user ? (
               <div className="relative" ref={userMenuRef}>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={toggleUserMenu}
-                  className="flex items-center space-x-2 h-9"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB] dark:hover:bg-[#1F2937] transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   aria-expanded={isUserMenuOpen}
                   aria-haspopup="menu"
-                  aria-label={`User menu for ${getUserDisplayName()}`}
                 >
-                  <User className="h-4 w-4" aria-hidden="true" />
-                  <span className="hidden sm:inline-block max-w-32 truncate">
-                    {getUserDisplayName()}
-                  </span>
-                </Button>
+                  <div className="w-6 h-6 rounded-full bg-[#2563EB] flex items-center justify-center shrink-0">
+                    <User className="h-3.5 w-3.5 text-white" aria-hidden="true" />
+                  </div>
+                  <span className="hidden sm:block max-w-[120px] truncate">{getUserDisplayName()}</span>
+                  <ChevronDown className={cn('h-3.5 w-3.5 transition-transform hidden sm:block', isUserMenuOpen && 'rotate-180')} aria-hidden="true" />
+                </button>
 
                 {isUserMenuOpen && (
-                  <div 
-                    className="absolute right-0 mt-2 w-48 rounded-lg border border-secondary-200 bg-white shadow-medium dark:border-secondary-800 dark:bg-secondary-900"
+                  <div
+                    className="absolute right-0 mt-1.5 w-48 rounded-xl border border-[#E2E8F0] bg-white shadow-medium dark:border-[#1F2937] dark:bg-[#111827] animate-scale-in"
                     role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="user-menu-button"
                   >
+                    <div className="px-3 py-2.5 border-b border-[#F1F5F9] dark:border-[#1F2937]">
+                      <p className="text-xs font-medium text-[#0F172A] dark:text-[#E5E7EB] truncate">{getUserDisplayName()}</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#9CA3AF] truncate">{user.email}</p>
+                    </div>
                     <div className="py-1">
-                      {userMenuItems.map((item, index) => {
-                        const Icon = item.icon;
-                        const isLogout = item.value === 'logout';
-                        return (
-                          <button
-                            key={item.value}
-                            onClick={item.onClick}
-                            className={cn(
-                              'flex w-full items-center px-4 py-2 text-sm text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset',
-                              isLogout
-                                ? 'text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/20'
-                                : 'text-secondary-700 hover:bg-secondary-100 dark:text-secondary-300 dark:hover:bg-secondary-800'
-                            )}
-                            role="menuitem"
-                            tabIndex={-1}
-                          >
-                            <Icon className="mr-3 h-4 w-4" aria-hidden="true" />
-                            {item.label}
-                          </button>
-                        );
-                      })}
+                      {[
+                        { label: 'Dashboard', icon: Briefcase, path: getDashboardPath() },
+                        { label: 'Profile', icon: User, path: ROUTES.PROFILE },
+                        { label: 'Settings', icon: Settings, path: ROUTES.SETTINGS },
+                      ].map(item => (
+                        <button
+                          key={item.label}
+                          onClick={() => handleNavigation(item.path)}
+                          className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#F8FAFC] dark:text-[#D1D5DB] dark:hover:bg-[#1F2937] transition-colors"
+                          role="menuitem"
+                        >
+                          <item.icon className="h-4 w-4 text-[#64748B] dark:text-[#9CA3AF]" aria-hidden="true" />
+                          {item.label}
+                        </button>
+                      ))}
+                      <div className="border-t border-[#F1F5F9] dark:border-[#1F2937] mt-1 pt-1">
+                        <button
+                          onClick={onLogout}
+                          className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#DC2626] hover:bg-[#FEF2F2] dark:text-[#F87171] dark:hover:bg-[#7F1D1D]/20 transition-colors"
+                          role="menuitem"
+                        >
+                          <LogOut className="h-4 w-4" aria-hidden="true" />
+                          Sign out
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="hidden sm:flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleNavigation(ROUTES.LOGIN)}
-                >
+              <div className="hidden sm:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => handleNavigation(ROUTES.LOGIN)}>
                   Sign in
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleNavigation(ROUTES.REGISTER)}
-                >
+                <Button variant="primary" size="sm" onClick={() => handleNavigation(ROUTES.REGISTER)}>
                   Sign up
                 </Button>
               </div>
             )}
 
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={toggleMobileMenu}
-              className="lg:hidden h-10 w-10 p-0"
+              className="lg:hidden p-2 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB] dark:hover:bg-[#1F2937] transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
             >
-              {isMobileMenuOpen ? (
-                <X className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Menu className="h-4 w-4" aria-hidden="true" />
-              )}
-            </Button>
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
 
         {isMobileMenuOpen && (
-          <div 
+          <div
             id="mobile-menu"
-            className="lg:hidden border-t border-secondary-200 dark:border-secondary-800"
             ref={mobileMenuRef}
+            className="lg:hidden border-t border-[#E2E8F0] dark:border-[#1F2937] py-3 animate-slide-up"
             role="navigation"
             aria-label="Mobile navigation"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link
-                href={ROUTES.JOBS}
-                className="block px-3 py-2 text-base font-medium text-secondary-700 hover:text-primary-600 hover:bg-secondary-100 rounded-md transition-colors dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Find Jobs
-              </Link>
-              {user?.role === 'employer' && (
-                <>
-                  <Link
-                    href="/dashboard/employer/jobs/new"
-                    className="block px-3 py-2 text-base font-medium text-secondary-700 hover:text-primary-600 hover:bg-secondary-100 rounded-md transition-colors dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Post Job
-                  </Link>
-                  <Link
-                    href={ROUTES.HIRING_SOLUTIONS}
-                    className="block px-3 py-2 text-base font-medium text-secondary-700 hover:text-primary-600 hover:bg-secondary-100 rounded-md transition-colors dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Hiring Solutions
-                  </Link>
-                </>
-              )}
-              <Link
-                href={ROUTES.ABOUT}
-                className="block px-3 py-2 text-base font-medium text-secondary-700 hover:text-primary-600 hover:bg-secondary-100 rounded-md transition-colors dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              
+            <div className="space-y-0.5">
+              {navLinks.map((link: any) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block px-3 py-2.5 rounded-lg text-sm font-medium text-[#374151] hover:text-[#0F172A] hover:bg-[#F1F5F9] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB] dark:hover:bg-[#1F2937] transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
               {!user && (
-                <div className="pt-4 border-t border-secondary-200 dark:border-secondary-800">
-                  <div className="space-y-2">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => handleNavigation(ROUTES.LOGIN)}
-                    >
-                      Sign in
-                    </Button>
-                    <Button
-                      variant="primary"
-                      className="w-full justify-start"
-                      onClick={() => handleNavigation(ROUTES.REGISTER)}
-                    >
-                      Sign up
-                    </Button>
-                  </div>
+                <div className="pt-3 mt-2 border-t border-[#E2E8F0] dark:border-[#1F2937] flex flex-col gap-2">
+                  <Button variant="ghost" className="w-full justify-center" onClick={() => handleNavigation(ROUTES.LOGIN)}>
+                    Sign in
+                  </Button>
+                  <Button variant="primary" className="w-full justify-center" onClick={() => handleNavigation(ROUTES.REGISTER)}>
+                    Sign up
+                  </Button>
                 </div>
               )}
             </div>

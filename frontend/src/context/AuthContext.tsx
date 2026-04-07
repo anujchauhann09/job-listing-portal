@@ -36,33 +36,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Return cached user immediately if available — avoids redundant /auth/me calls
-      const cached = sessionStorage.getItem(SESSION_CACHE_KEY);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          setUser(parsed);
-          setLoading(false);
-          return;
-        } catch {
-          sessionStorage.removeItem(SESSION_CACHE_KEY);
-        }
-      }
-
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await authService.getCurrentUser();
-        
+
         if (response.success && response.data) {
           const user = buildUser(response.data);
           sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(user));
           setUser(user);
         } else {
+          sessionStorage.removeItem(SESSION_CACHE_KEY);
           setUser(null);
         }
       } catch (error: any) {
+        sessionStorage.removeItem(SESSION_CACHE_KEY);
         setUser(null);
       } finally {
         setLoading(false);
@@ -195,6 +184,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
   }, []);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      sessionStorage.removeItem(SESSION_CACHE_KEY);
+      setUser(null);
+      setError(null);
+      if (typeof window !== 'undefined') {
+        const isAuthPage = window.location.pathname.startsWith('/auth/');
+        if (!isAuthPage) {
+          window.location.href = '/auth/login';
+        }
+      }
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
   const refreshUser = useCallback(async () => {
     if (!user) return;
     
@@ -212,8 +218,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Used after OAuth flow — POSTs the token through the proxy so cookies
-  // are set on the frontend domain
   const loginWithSession = useCallback(async (bearerToken?: string) => {
     try {
       const response = bearerToken

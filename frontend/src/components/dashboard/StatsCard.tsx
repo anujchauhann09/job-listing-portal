@@ -1,85 +1,38 @@
-'use client';
-
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
   value: string | number;
-  change?: {
-    value: number;
-    trend: 'up' | 'down' | 'neutral';
-    period?: string;
-  };
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
+  trend?: { value: number; label: string };
   className?: string;
 }
 
-export function StatsCard({ title, value, change, icon, className }: StatsCardProps) {
-  const getTrendIcon = () => {
-    if (!change) return null;
-    
-    switch (change.trend) {
-      case 'up':
-        return <TrendingUp className="h-4 w-4" />;
-      case 'down':
-        return <TrendingDown className="h-4 w-4" />;
-      case 'neutral':
-        return <Minus className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const getTrendColor = () => {
-    if (!change) return '';
-    
-    switch (change.trend) {
-      case 'up':
-        return 'text-success-600 dark:text-success-400';
-      case 'down':
-        return 'text-error-600 dark:text-error-400';
-      case 'neutral':
-        return 'text-secondary-500 dark:text-secondary-400';
-      default:
-        return '';
-    }
-  };
-
+export function StatsCard({ title, value, icon, trend, className }: StatsCardProps) {
   return (
     <div className={cn(
-      'bg-white dark:bg-secondary-800 rounded-lg border border-secondary-200 dark:border-secondary-700 p-6',
+      'bg-white dark:bg-[#111827] rounded-xl border border-[#E2E8F0] dark:border-[#1F2937] p-5',
       className
     )}>
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
-            {title}
-          </p>
-          <p className="text-2xl font-bold text-secondary-900 dark:text-secondary-100 mt-2">
-            {value}
-          </p>
-          
-          {change && (
-            <div className={cn(
-              'flex items-center space-x-1 mt-2 text-sm',
-              getTrendColor()
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-[#64748B] dark:text-[#9CA3AF] uppercase tracking-wide">{title}</p>
+          <p className="text-2xl font-bold text-[#0F172A] dark:text-[#E5E7EB] mt-1 leading-none">{value}</p>
+          {trend && (
+            <p className={cn(
+              'text-xs mt-1.5 font-medium',
+              trend.value >= 0 ? 'text-[#16A34A] dark:text-[#4ADE80]' : 'text-[#DC2626] dark:text-[#F87171]'
             )}>
-              {getTrendIcon()}
-              <span>
-                {change.value > 0 ? '+' : ''}{change.value}
-                {change.period && ` ${change.period}`}
-              </span>
-            </div>
+              {trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}% {trend.label}
+            </p>
           )}
         </div>
-        
-        <div className="flex-shrink-0">
-          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400">
+        {icon && (
+          <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 flex items-center justify-center shrink-0 text-[#2563EB] dark:text-[#60A5FA]">
             {icon}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

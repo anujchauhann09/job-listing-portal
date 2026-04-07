@@ -14,76 +14,53 @@ export interface JobSearchResultsProps {
 }
 
 export const JobSearchResults: React.FC<JobSearchResultsProps> = ({
-  results,
-  loading = false,
-  onJobClick,
-  onLoadMore,
-  onApplyToJob,
-  showApplyButton = false,
+  results, loading = false, onJobClick, onLoadMore, onApplyToJob, showApplyButton = false,
 }) => {
   if (loading && results.items.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary-600" />
-          <p className="text-secondary-600 dark:text-secondary-400">Searching for jobs...</p>
-        </div>
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-7 w-7 animate-spin text-[#2563EB]" aria-hidden="true" />
       </div>
     );
   }
 
   if (!loading && results.items.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center max-w-md">
-          <Search className="h-12 w-12 mx-auto mb-4 text-secondary-400" />
-          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-2">
-            No jobs found
-          </h3>
-          <p className="text-secondary-600 dark:text-secondary-400 mb-4">
-            We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms.
-          </p>
-          <div className="space-y-2 text-sm text-secondary-500 dark:text-secondary-500">
-            <p>• Try broader search terms</p>
-            <p>• Remove some filters</p>
-            <p>• Check your spelling</p>
-            <p>• Try searching in different locations</p>
-          </div>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-14 h-14 rounded-full bg-[#F1F5F9] dark:bg-[#1F2937] flex items-center justify-center mb-4">
+          <Search className="h-7 w-7 text-[#94A3B8]" aria-hidden="true" />
         </div>
+        <h3 className="text-base font-semibold text-[#0F172A] dark:text-[#E5E7EB] mb-1">No jobs found</h3>
+        <p className="text-sm text-[#64748B] dark:text-[#9CA3AF] max-w-sm">
+          Try adjusting your search terms or removing some filters.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400 min-w-0">
-          <Briefcase className="h-4 w-4 shrink-0" />
-          <span className="text-sm font-medium truncate">
-            {results.total.toLocaleString()} job{results.total !== 1 ? 's' : ''} found
-          </span>
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-sm text-[#64748B] dark:text-[#9CA3AF]">
+          <Briefcase className="h-4 w-4" aria-hidden="true" />
+          <span className="font-medium text-[#0F172A] dark:text-[#E5E7EB]">{results.total.toLocaleString()}</span>
+          job{results.total !== 1 ? 's' : ''} found
         </div>
         {results.total > 0 && (
-          <span className="text-xs text-secondary-500 dark:text-secondary-500 shrink-0">
+          <span className="text-xs text-[#94A3B8] dark:text-[#6B7280]">
             Showing {results.items.length} of {results.total}
           </span>
         )}
       </div>
 
-      <div className="space-y-4">
-        {results.items.map((job) => (
+      <div className="space-y-3">
+        {results.items.map(job => (
           <JobCard
             key={job.uuid}
             job={job}
             onClick={() => onJobClick(job)}
             actions={showApplyButton && onApplyToJob ? (
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onApplyToJob(job.uuid);
-                }}
-              >
+              <Button size="sm" onClick={e => { e.stopPropagation(); onApplyToJob(job.uuid); }}>
                 Apply Now
               </Button>
             ) : undefined}
@@ -92,31 +69,10 @@ export const JobSearchResults: React.FC<JobSearchResultsProps> = ({
       </div>
 
       {results.hasMore && onLoadMore && (
-        <div className="flex justify-center pt-6">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            loading={loading}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading more jobs...
-              </>
-            ) : (
-              'Load More Jobs'
-            )}
+        <div className="flex justify-center pt-4">
+          <Button variant="outline" onClick={onLoadMore} loading={loading} disabled={loading}>
+            {loading ? 'Loading...' : 'Load More Jobs'}
           </Button>
-        </div>
-      )}
-
-      {loading && results.items.length > 0 && (
-        <div className="flex justify-center py-4">
-          <div className="flex items-center text-secondary-600 dark:text-secondary-400">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            <span>Loading more jobs...</span>
-          </div>
         </div>
       )}
     </div>

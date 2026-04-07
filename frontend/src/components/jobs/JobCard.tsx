@@ -1,8 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Job } from '@/types/job';
-import { MapPin, Calendar, DollarSign, Building2, Briefcase, MapPinned } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Building2, Briefcase, Wifi } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatJobType, formatExperienceLevel, formatRemoteType, formatSalary, formatPostedDate, getSkillNames } from '@/lib/jobUtils';
 
@@ -14,114 +13,102 @@ export interface JobCardProps {
   showEmployer?: boolean;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({
-  job,
-  actions,
-  onClick,
-  className,
-  showEmployer = true,
-}) => {
-  const getJobTypeColor = (type: string) => {
-    switch (type) {
-      case 'FULL_TIME':
-        return 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200';
-      case 'PART_TIME':
-        return 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200';
-      case 'CONTRACT':
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-200';
-      case 'INTERNSHIP':
-        return 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200';
-      default:
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-200';
-    }
-  };
+const JOB_TYPE_BADGE: Record<string, string> = {
+  FULL_TIME:  'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/30 dark:text-[#93C5FD]',
+  PART_TIME:  'bg-[#FFFBEB] text-[#D97706] dark:bg-[#78350F]/30 dark:text-[#FCD34D]',
+  CONTRACT:   'bg-[#F5F3FF] text-[#7C3AED] dark:bg-[#4C1D95]/30 dark:text-[#C4B5FD]',
+  INTERNSHIP: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/30 dark:text-[#4ADE80]',
+};
 
+export const JobCard: React.FC<JobCardProps> = ({ job, actions, onClick, className, showEmployer = true }) => {
   const skills = getSkillNames(job);
+  const badgeClass = JOB_TYPE_BADGE[job.jobType] || 'bg-[#F1F5F9] text-[#475569]';
 
   return (
-    <Card 
+    <div
       className={cn(
-        'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600',
+        'group relative bg-white dark:bg-[#111827] rounded-xl border border-[#E2E8F0] dark:border-[#1F2937]',
+        'transition-all duration-200',
+        'hover:border-[#BFDBFE] dark:hover:border-[#1E3A8A] hover:shadow-hover hover:-translate-y-0.5',
+        onClick && 'cursor-pointer',
         className
       )}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 line-clamp-1">
+      <div className="p-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[15px] font-semibold text-[#0F172A] dark:text-[#E5E7EB] leading-snug line-clamp-1 group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA] transition-colors">
               {job.title}
             </h3>
             {showEmployer && job.employer && (
-              <div className="flex items-center mt-1 text-secondary-600 dark:text-secondary-400">
-                <Building2 className="h-4 w-4 mr-1" />
-                <span className="text-sm">{job.employer.companyName}</span>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Building2 className="h-3.5 w-3.5 text-[#94A3B8] shrink-0" aria-hidden="true" />
+                <span className="text-sm text-[#64748B] dark:text-[#9CA3AF] truncate">{job.employer.companyName}</span>
+                {job.employer.industry && (
+                  <span className="text-[#CBD5E1] dark:text-[#374151]">·</span>
+                )}
+                {job.employer.industry && (
+                  <span className="text-xs text-[#94A3B8] dark:text-[#6B7280] truncate">{job.employer.industry}</span>
+                )}
               </div>
             )}
           </div>
-          <Badge className={getJobTypeColor(job.jobType)}>
+          <span className={cn('shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', badgeClass)}>
             {formatJobType(job.jobType)}
-          </Badge>
+          </span>
         </div>
-      </CardHeader>
 
-      <CardContent className="py-3">
-        {job.description && (
-          <p className="text-sm text-secondary-600 dark:text-secondary-400 line-clamp-2 mb-3">
-            {job.description}
-          </p>
-        )}
-        
-        <div className="flex flex-wrap gap-3 text-sm text-secondary-600 dark:text-secondary-400 mb-3">
-          <div className="flex items-center">
-            <MapPin className="h-4 w-4 mr-1" />
-            <span>{job.location}</span>
-          </div>
-
-          <div className="flex items-center">
-            <MapPinned className="h-4 w-4 mr-1" />
-            <span>{formatRemoteType(job.remoteType)}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <Briefcase className="h-4 w-4 mr-1" />
-            <span>{formatExperienceLevel(job.experienceLevel)}</span>
-          </div>
-          
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-3">
+          <span className="flex items-center gap-1 text-xs text-[#64748B] dark:text-[#9CA3AF]">
+            <MapPin className="h-3.5 w-3.5 text-[#94A3B8]" aria-hidden="true" />
+            {job.location}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-[#64748B] dark:text-[#9CA3AF]">
+            <Wifi className="h-3.5 w-3.5 text-[#94A3B8]" aria-hidden="true" />
+            {formatRemoteType(job.remoteType)}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-[#64748B] dark:text-[#9CA3AF]">
+            <Briefcase className="h-3.5 w-3.5 text-[#94A3B8]" aria-hidden="true" />
+            {formatExperienceLevel(job.experienceLevel)}
+          </span>
           {(job.salaryMin || job.salaryMax) && (
-            <div className="flex items-center">
-              <DollarSign className="h-4 w-4 mr-1" />
-              <span>{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod)}</span>
-            </div>
+            <span className="flex items-center gap-1 text-xs font-medium text-[#16A34A] dark:text-[#4ADE80]">
+              <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
+              {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod)}
+            </span>
           )}
-          
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
-            <span>{formatPostedDate(job.createdAt)}</span>
-          </div>
+          <span className="flex items-center gap-1 text-xs text-[#94A3B8] dark:text-[#6B7280] ml-auto">
+            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+            {formatPostedDate(job.createdAt)}
+          </span>
         </div>
 
         {skills.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {skills.slice(0, 3).map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+          <div className="flex flex-wrap gap-1.5">
+            {skills.slice(0, 4).map((skill, i) => (
+              <span key={i} className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0] dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:border-[#374151]">
                 {skill}
-              </Badge>
+              </span>
             ))}
-            {skills.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{skills.length - 3} more
-              </Badge>
+            {skills.length > 4 && (
+              <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs text-[#94A3B8] dark:text-[#6B7280]">
+                +{skills.length - 4}
+              </span>
             )}
           </div>
         )}
-      </CardContent>
+      </div>
 
       {actions && (
-        <CardFooter className="pt-3">
-          {actions}
-        </CardFooter>
+        <div className="px-5 pb-4 pt-0 border-t border-[#F1F5F9] dark:border-[#1F2937] mt-0">
+          <div className="pt-3">{actions}</div>
+        </div>
       )}
-    </Card>
+    </div>
   );
 };

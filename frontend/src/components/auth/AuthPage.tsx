@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { AuthForm } from './AuthForm';
-import { PasswordResetForm } from './PasswordResetForm';
 import { SocialLogin } from './SocialLogin';
 import { useAuth } from '@/context/AuthContext';
-import { LoginFormData, RegisterFormData, PasswordResetFormData } from '@/validators/auth';
+import { LoginFormData, RegisterFormData } from '@/validators/auth';
+import { cn } from '@/lib/utils';
 
-type AuthMode = 'login' | 'register' | 'reset-password';
+type AuthMode = 'login' | 'register';
 
 interface AuthPageProps {
   initialMode?: AuthMode;
@@ -20,12 +20,11 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'job-seeker' | 'employer'>('job-seeker');
-  const { login, register, resetPassword, loading, error, clearError } = useAuth();
+  const { login, register, loading, error, clearError } = useAuth();
 
   const handleAuthSubmit = async (data: LoginFormData | RegisterFormData) => {
     try {
       clearError();
-      
       if (mode === 'login') {
         await login(data as LoginFormData);
         onSuccess?.();
@@ -37,16 +36,7 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
           onSuccess?.();
         }, 2000);
       }
-    } catch (error) {
-    }
-  };
-
-  const handlePasswordReset = async (data: PasswordResetFormData) => {
-    try {
-      clearError();
-      await resetPassword(data);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleRoleChange = (role: 'job-seeker' | 'employer') => {
@@ -55,11 +45,8 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
 
   const handleSocialLogin = async (provider: string) => {
     const backendRole = selectedRole === 'job-seeker' ? 'JOB_SEEKER' : 'EMPLOYER';
-    
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-    const oauthUrl = `${backendUrl}/auth/oauth/${provider}?role=${backendRole}`;
-    
-    window.location.href = oauthUrl;
+    window.location.href = `${backendUrl}/auth/oauth/${provider}?role=${backendRole}`;
   };
 
   const handleModeChangeInternal = (newMode: 'login' | 'register') => {
@@ -71,59 +58,38 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
     }
   };
 
-  const handleForgotPassword = () => {
-    clearError();
-    setMode('reset-password');
-  };
-
-  const handleBackToLogin = () => {
-    clearError();
-    if (onModeChange) {
-      onModeChange('login');
-    } else {
-      setMode('login');
-    }
-  };
-
-  if (mode === 'reset-password') {
-    return (
-      <div className={className}>
-        <PasswordResetForm
-          onSubmit={handlePasswordReset}
-          onBack={handleBackToLogin}
-          loading={loading}
-          error={error || undefined}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className={className}>
-      <div className="space-y-6">
-        {registrationSuccess && (
-          <div className="p-4 rounded-lg bg-success-50 border border-success-200 dark:bg-success-900/20 dark:border-success-800">
-            <p className="text-sm text-success-600 dark:text-success-400 text-center">
-              Registration successful! Redirecting to login...
-            </p>
+    <div className={cn(
+      'min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0B0F19] px-4 py-12',
+      className
+    )}>
+      <div className="w-full max-w-sm">
+        <div className="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1F2937] shadow-card p-7">
+          <div className="space-y-5">
+            {registrationSuccess && (
+              <div className="p-3 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] dark:bg-[#14532D]/20 dark:border-[#14532D]">
+                <p className="text-xs text-[#16A34A] dark:text-[#4ADE80] text-center">
+                  Registration successful! Redirecting to login...
+                </p>
+              </div>
+            )}
+
+            <AuthForm
+              mode={mode}
+              onSubmit={handleAuthSubmit}
+              onModeChange={handleModeChangeInternal}
+              onRoleChange={handleRoleChange}
+              loading={loading}
+              error={error || undefined}
+            />
+
+            <SocialLogin
+              providers={['google', 'linkedin', 'github']}
+              onProviderClick={handleSocialLogin}
+              disabled={loading}
+            />
           </div>
-        )}
-        
-        <AuthForm
-          mode={mode as 'login' | 'register'}
-          onSubmit={handleAuthSubmit}
-          onForgotPassword={handleForgotPassword}
-          onModeChange={handleModeChangeInternal}
-          onRoleChange={handleRoleChange}
-          loading={loading}
-          error={error || undefined}
-        />
-        
-        <SocialLogin
-          providers={['google', 'linkedin', 'github']}
-          onProviderClick={handleSocialLogin}
-          disabled={loading}
-        />
+        </div>
       </div>
     </div>
   );

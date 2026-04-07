@@ -11,17 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Job } from '@/types/job';
 import { jobService } from '@/services/jobs';
-import {
-  Briefcase,
-  Users,
-  Eye,
-  CheckCircle,
-  Plus,
-  Loader2,
-  Inbox,
-  Edit,
-  Trash2,
-} from 'lucide-react';
+import { Briefcase, Users, Plus, Loader2, Inbox, Edit, Trash2, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 export default function EmployerDashboard() {
@@ -42,11 +32,8 @@ export default function EmployerDashboard() {
       setLoading(true);
       setError(null);
       const response = await jobService.getEmployerJobs();
-      if (response.success && response.data) {
-        setJobs(response.data);
-      } else {
-        setError('Failed to load jobs');
-      }
+      if (response.success && response.data) setJobs(response.data);
+      else setError('Failed to load jobs');
     } catch (err: any) {
       setError(err.message || 'Failed to load jobs');
     } finally {
@@ -60,7 +47,7 @@ export default function EmployerDashboard() {
     try {
       const response = await jobService.deleteJob(deleteTarget.uuid);
       if (response.success) {
-        setJobs((prev) => prev.filter((j) => j.uuid !== deleteTarget.uuid));
+        setJobs(prev => prev.filter(j => j.uuid !== deleteTarget.uuid));
         setDeleteTarget(null);
       } else {
         alert('Failed to delete job. Please try again.');
@@ -74,133 +61,116 @@ export default function EmployerDashboard() {
 
   if (!user || user.role !== 'employer') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">Access Denied</h2>
-          <p className="text-secondary-600 dark:text-secondary-400 mt-2">This page is only accessible to employers.</p>
+          <h2 className="text-base font-semibold text-[#0F172A] dark:text-[#E5E7EB]">Access Denied</h2>
+          <p className="text-sm text-[#64748B] dark:text-[#9CA3AF] mt-1">This page is only accessible to employers.</p>
         </div>
       </div>
     );
   }
 
   const getCompanyName = () => {
-    if (user.role === 'employer' && 'companyName' in user.profile) {
-      return user.profile.companyName || 'Your Company';
-    }
+    if (user.role === 'employer' && 'companyName' in user.profile)
+      return (user.profile as any).companyName || 'Your Company';
     return 'Your Company';
   };
 
-  const activeJobs = jobs.filter((job) => job.status === 'OPEN');
+  const activeJobs = jobs.filter(j => j.status === 'OPEN');
 
   return (
-    <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DashboardHeader
-          user={user}
-          title={`Welcome back, ${getCompanyName()}!`}
-          subtitle="Manage your job postings and track applications"
-        />
+    <div className="space-y-6 animate-fade-in">
+      <DashboardHeader
+        user={user}
+        title={`Welcome back, ${getCompanyName()}`}
+        subtitle="Manage your job postings and track applications"
+        actions={
+          <Button size="sm" asChild>
+            <Link href="/dashboard/employer/jobs/new">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Post Job
+            </Link>
+          </Button>
+        }
+      />
 
-        <div className="flex justify-center gap-6 mb-8">
-          <div className="w-full max-w-xs">
-            <StatsCard title="Active Jobs" value={activeJobs.length} icon={<Briefcase className="h-6 w-6" />} />
-          </div>
-          <div className="w-full max-w-xs">
-            <StatsCard title="Total Jobs" value={jobs.length} icon={<Users className="h-6 w-6" />} />
-          </div>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4">
+        <StatsCard title="Active Jobs" value={loading ? '—' : activeJobs.length} icon={<Briefcase className="h-5 w-5" />} />
+        <StatsCard title="Total Jobs" value={loading ? '—' : jobs.length} icon={<Users className="h-5 w-5" />} />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
-                  Your Job Postings
-                </h2>
-                <Button variant="primary" size="sm" asChild>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Job listings */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-[#E2E8F0] dark:border-[#1F2937]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9] dark:border-[#1F2937]">
+              <h2 className="text-sm font-semibold text-[#0F172A] dark:text-[#E5E7EB]">Your Job Postings</h2>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-[#2563EB]" />
+              </div>
+            ) : error ? (
+              <div className="p-5">
+                <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-4 dark:bg-[#7F1D1D]/20 dark:border-[#7F1D1D]">
+                  <p className="text-sm text-[#DC2626] dark:text-[#F87171]">{error}</p>
+                  <Button variant="outline" size="sm" onClick={loadJobs} className="mt-3">Retry</Button>
+                </div>
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+                <div className="w-12 h-12 rounded-full bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 flex items-center justify-center mb-4">
+                  <Inbox className="w-6 h-6 text-[#2563EB] dark:text-[#60A5FA]" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-semibold text-[#0F172A] dark:text-[#E5E7EB] mb-1">No job postings yet</h3>
+                <p className="text-xs text-[#64748B] dark:text-[#9CA3AF] mb-5 max-w-xs">
+                  Start attracting top talent by posting your first job opening.
+                </p>
+                <Button size="sm" asChild>
                   <Link href="/dashboard/employer/jobs/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post Job
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Post Your First Job
                   </Link>
                 </Button>
               </div>
-
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-                </div>
-              ) : error ? (
-                <div className="bg-error-50 border border-error-200 rounded-lg p-4 dark:bg-error-900/20 dark:border-error-800">
-                  <p className="text-error-600 dark:text-error-400">{error}</p>
-                  <Button variant="outline" size="sm" onClick={loadJobs} className="mt-3">
-                    Retry
-                  </Button>
-                </div>
-              ) : jobs.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-4">
-                    <Inbox className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-2">
-                    No job postings yet
-                  </h3>
-                  <p className="text-secondary-600 dark:text-secondary-400 mb-6 max-w-md mx-auto">
-                    Start attracting top talent by posting your first job opening.
-                  </p>
-                  <Button variant="primary" asChild>
-                    <Link href="/dashboard/employer/jobs/new">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post Your First Job
-                    </Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {jobs.map((job) => (
-                    <JobCard
-                      key={job.uuid}
-                      job={job}
-                      onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}
-                      showEmployer={false}
-                      actions={
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}/edit`)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDeleteTarget(job)}
-                            className="text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-900/20"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            ) : (
+              <div className="p-4 space-y-3">
+                {jobs.map(job => (
+                  <JobCard
+                    key={job.uuid}
+                    job={job}
+                    onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}
+                    showEmployer={false}
+                    actions={
+                      <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}`)}>
+                          <Eye className="h-3.5 w-3.5" aria-hidden="true" /> View
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/employer/jobs/${job.uuid}/edit`)}>
+                          <Edit className="h-3.5 w-3.5" aria-hidden="true" /> Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeleteTarget(job)}
+                          className="text-[#DC2626] border-[#FECACA] hover:bg-[#FEF2F2] dark:text-[#F87171] dark:border-[#7F1D1D] dark:hover:bg-[#7F1D1D]/20"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
+                        </Button>
+                      </div>
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
-          <div className="space-y-6">
-            <ProfileCompletion steps={[]} userType="employer" />
-          </div>
+        {/* Sidebar */}
+        <div className="space-y-4">
+          <ProfileCompletion steps={[]} userType="employer" />
         </div>
       </div>
 

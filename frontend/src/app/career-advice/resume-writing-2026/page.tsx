@@ -9,14 +9,11 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { 
   FileText, 
-  Clock, 
-  Eye,
+  Clock,
   CheckCircle,
   XCircle,
   Lightbulb,
   ArrowLeft,
-  Share2,
-  Bookmark
 } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 
@@ -49,10 +46,6 @@ export default function ResumeWriting2026Page() {
                   <Clock className="h-4 w-4 mr-1" />
                   8 min read
                 </span>
-                <span className="text-sm text-secondary-500 dark:text-secondary-400 flex items-center">
-                  <Eye className="h-4 w-4 mr-1" />
-                  25.3K views
-                </span>
               </div>
 
               <h1 className="text-4xl font-bold text-secondary-900 dark:text-secondary-100 mb-4">
@@ -63,21 +56,9 @@ export default function ResumeWriting2026Page() {
                 Learn the latest resume trends and best practices that will make your application stand out to recruiters and hiring managers.
               </p>
 
-              <div className="flex items-center justify-between pt-6 border-t border-secondary-200 dark:border-secondary-700">
-                <div className="flex items-center space-x-4">
-                  <div className="text-sm text-secondary-600 dark:text-secondary-400">
-                    Published: March 6, 2026
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Bookmark className="h-4 w-4 mr-2" />
-                    Save
-                  </Button>
+              <div className="flex items-center pt-6 border-t border-secondary-200 dark:border-secondary-700">
+                <div className="text-sm text-secondary-600 dark:text-secondary-400">
+                  Published: March 6, 2026
                 </div>
               </div>
             </Card>

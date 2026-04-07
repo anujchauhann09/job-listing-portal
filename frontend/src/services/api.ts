@@ -13,6 +13,8 @@ export interface ApiError {
 export class ApiClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
+  private isRefreshing = false;
+  private refreshQueue: Array<{ resolve: () => void; reject: (e: Error) => void }> = [];
 
   constructor(baseUrl: string = '/api') {
     this.baseUrl = baseUrl;
@@ -21,9 +23,40 @@ export class ApiClient {
     };
   }
 
+  private async tryRefresh(): Promise<void> {
+    if (this.isRefreshing) {
+      return new Promise((resolve, reject) => {
+        this.refreshQueue.push({ resolve, reject });
+      });
+    }
+
+    this.isRefreshing = true;
+
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Refresh failed');
+      }
+
+      this.refreshQueue.forEach(p => p.resolve());
+    } catch (err) {
+      this.refreshQueue.forEach(p => p.reject(new Error('Session expired')));
+      throw err;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshQueue = [];
+    }
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isRetry = false
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     
@@ -43,7 +76,29 @@ export class ApiClient {
       
       if (!response.ok) {
         const errorMessage = data?.message || `HTTP ${response.status}: ${response.statusText}`;
-        
+
+        if (
+          response.status === 401 &&
+          !isRetry &&
+          endpoint !== '/auth/refresh' &&
+          endpoint !== '/auth/login' &&
+          endpoint !== '/auth/me'
+        ) {
+          try {
+            await this.tryRefresh();
+            return this.request<T>(endpoint, options, true);
+          } catch {
+            if (typeof window !== 'undefined') {
+              const isAuthPage = window.location.pathname.startsWith('/auth/');
+              if (!isAuthPage) {
+                window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+              }
+            }
+            throw new Error(errorMessage);
+          }
+        }
+
+        // 401 on /auth/me (init check) — just throw, AuthContext handles it
         if (!(response.status === 401 && endpoint === '/auth/me')) {
           console.error('API Error:', errorMessage);
         }
@@ -54,7 +109,6 @@ export class ApiClient {
       return data;
     } catch (error) {
       if (!(error instanceof Error && error.message.includes('Authentication token') && endpoint === '/auth/me')) {
-        console.error('API request failed:', error);
       }
       throw error;
     }

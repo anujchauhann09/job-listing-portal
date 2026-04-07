@@ -1,49 +1,38 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md';
   children: React.ReactNode;
 }
 
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant = 'default', size = 'md', children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2';
-    
+const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ className, variant = 'default', size = 'sm', children, ...props }, ref) => {
+    const base = 'inline-flex items-center rounded-full font-medium leading-none';
+
     const variants = {
-      default: 'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-200',
-      primary: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
-      secondary: 'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-200',
-      success: 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200',
-      warning: 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200',
-      error: 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200',
-      outline: 'border border-secondary-300 bg-transparent text-secondary-700 dark:border-secondary-600 dark:text-secondary-300',
+      default:   'bg-[#F1F5F9] text-[#475569] dark:bg-[#1F2937] dark:text-[#9CA3AF]',
+      primary:   'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/30 dark:text-[#93C5FD]',
+      secondary: 'bg-[#F1F5F9] text-[#475569] dark:bg-[#1F2937] dark:text-[#9CA3AF]',
+      success:   'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/30 dark:text-[#4ADE80]',
+      warning:   'bg-[#FFFBEB] text-[#D97706] dark:bg-[#78350F]/30 dark:text-[#FCD34D]',
+      error:     'bg-[#FEF2F2] text-[#DC2626] dark:bg-[#7F1D1D]/30 dark:text-[#F87171]',
+      outline:   'border border-[#E2E8F0] text-[#475569] dark:border-[#374151] dark:text-[#9CA3AF]',
     };
 
     const sizes = {
       sm: 'px-2 py-0.5 text-xs',
-      md: 'px-2.5 py-0.5 text-sm',
-      lg: 'px-3 py-1 text-base',
+      md: 'px-2.5 py-1 text-sm',
     };
 
     return (
-      <div
-        ref={ref}
-        className={cn(
-          baseStyles,
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        {...props}
-      >
+      <span ref={ref} className={cn(base, variants[variant], sizes[size], className)} {...props}>
         {children}
-      </div>
+      </span>
     );
   }
 );
 
 Badge.displayName = 'Badge';
-
 export { Badge };

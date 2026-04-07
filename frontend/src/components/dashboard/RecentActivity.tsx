@@ -2,170 +2,97 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { ApplicationStatus } from '@/types/job';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { 
-  Clock, 
-  MapPin, 
-  Building, 
-  ExternalLink,
-  Eye,
-  FileText,
-} from 'lucide-react';
+import { Briefcase, Building2, MapPin, ArrowRight } from 'lucide-react';
 
-interface JobApplication {
+interface ActivityItem {
   id: string;
   jobTitle: string;
   company: string;
   location: string;
   appliedDate: Date;
-  status: 'APPLIED' | 'SHORTLISTED' | 'REJECTED' | 'HIRED' | 'WITHDRAWN';
+  status: ApplicationStatus;
   jobId: string;
 }
 
 interface RecentActivityProps {
-  applications: JobApplication[];
-  className?: string;
+  applications: ActivityItem[];
 }
 
-const statusConfig = {
-  APPLIED: {
-    label: 'Applied',
-    variant: 'secondary' as const,
-    color: 'text-secondary-600 dark:text-secondary-400',
-  },
-  SHORTLISTED: {
-    label: 'Shortlisted',
-    variant: 'success' as const,
-    color: 'text-success-600 dark:text-success-400',
-  },
-  REJECTED: {
-    label: 'Rejected',
-    variant: 'error' as const,
-    color: 'text-error-600 dark:text-error-400',
-  },
-  HIRED: {
-    label: 'Hired',
-    variant: 'success' as const,
-    color: 'text-success-600 dark:text-success-400',
-  },
-  WITHDRAWN: {
-    label: 'Withdrawn',
-    variant: 'secondary' as const,
-    color: 'text-secondary-500 dark:text-secondary-500',
-  },
+const STATUS_CONFIG: Record<ApplicationStatus, { label: string; className: string }> = {
+  APPLIED:     { label: 'Applied',     className: 'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/20 dark:text-[#93C5FD]' },
+  SHORTLISTED: { label: 'Shortlisted', className: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/20 dark:text-[#4ADE80]' },
+  REJECTED:    { label: 'Rejected',    className: 'bg-[#FEF2F2] text-[#DC2626] dark:bg-[#7F1D1D]/20 dark:text-[#F87171]' },
+  HIRED:       { label: 'Hired',       className: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/20 dark:text-[#4ADE80]' },
+  WITHDRAWN:   { label: 'Withdrawn',   className: 'bg-[#F1F5F9] text-[#64748B] dark:bg-[#1F2937] dark:text-[#9CA3AF]' },
 };
 
-export function RecentActivity({ applications, className }: RecentActivityProps) {
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    
-    return date.toLocaleDateString();
-  };
-
-  if (applications.length === 0) {
-    return (
-      <div className={cn(
-        'bg-white dark:bg-secondary-800 rounded-lg border border-secondary-200 dark:border-secondary-700 p-6',
-        className
-      )}>
-        <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
-          Recent Applications
-        </h3>
-        <div className="text-center py-8">
-          <FileText className="h-12 w-12 text-secondary-400 dark:text-secondary-500 mx-auto mb-4" />
-          <p className="text-secondary-600 dark:text-secondary-400 mb-4">
-            No applications yet
-          </p>
-          <Button variant="primary" size="sm" asChild>
-            <Link href="/jobs">
-              Browse Jobs
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+export function RecentActivity({ applications }: RecentActivityProps) {
+  const recent = applications.slice(0, 5);
 
   return (
-    <div className={cn(
-      'bg-white dark:bg-secondary-800 rounded-lg border border-secondary-200 dark:border-secondary-700 p-6',
-      className
-    )}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100">
-          Recent Applications
-        </h3>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/applications">
-            View All
-          </Link>
-        </Button>
+    <div className="bg-white dark:bg-[#111827] rounded-xl border border-[#E2E8F0] dark:border-[#1F2937]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9] dark:border-[#1F2937]">
+        <h2 className="text-sm font-semibold text-[#0F172A] dark:text-[#E5E7EB]">Recent Applications</h2>
+        <Link
+          href="/dashboard/applications"
+          className="flex items-center gap-1 text-xs text-[#2563EB] hover:text-[#1D4ED8] dark:text-[#60A5FA] transition-colors"
+        >
+          View all <ArrowRight className="h-3 w-3" aria-hidden="true" />
+        </Link>
       </div>
-      
-      <div className="space-y-4">
-        {applications.slice(0, 5).map((application) => (
-          <div
-            key={application.id}
-            className="flex items-start space-x-4 p-4 rounded-lg border border-secondary-100 dark:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-700/50 transition-colors"
+
+      {recent.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center px-5">
+          <div className="w-10 h-10 rounded-full bg-[#F1F5F9] dark:bg-[#1F2937] flex items-center justify-center mb-3">
+            <Briefcase className="h-5 w-5 text-[#94A3B8]" aria-hidden="true" />
+          </div>
+          <p className="text-sm font-medium text-[#374151] dark:text-[#D1D5DB]">No applications yet</p>
+          <p className="text-xs text-[#94A3B8] dark:text-[#6B7280] mt-1">Start applying to jobs to track them here</p>
+          <Link
+            href="/jobs"
+            className="mt-4 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] dark:text-[#60A5FA] transition-colors"
           >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-secondary-900 dark:text-secondary-100 truncate">
-                    {application.jobTitle}
-                  </h4>
-                  <div className="flex items-center space-x-4 mt-1 text-xs text-secondary-600 dark:text-secondary-400">
-                    <div className="flex items-center space-x-1">
-                      <Building className="h-3 w-3" />
-                      <span>{application.company}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{application.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatDate(application.appliedDate)}</span>
-                    </div>
+            Browse Jobs →
+          </Link>
+        </div>
+      ) : (
+        <div className="divide-y divide-[#F1F5F9] dark:divide-[#1F2937]">
+          {recent.map(app => {
+            const status = STATUS_CONFIG[app.status] || STATUS_CONFIG.APPLIED;
+            return (
+              <div key={app.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F8FAFC] dark:hover:bg-[#1F2937]/50 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 flex items-center justify-center shrink-0">
+                  <Briefcase className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" aria-hidden="true" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#0F172A] dark:text-[#E5E7EB] truncate">{app.jobTitle}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="flex items-center gap-1 text-xs text-[#64748B] dark:text-[#9CA3AF]">
+                      <Building2 className="h-3 w-3" aria-hidden="true" />{app.company}
+                    </span>
+                    {app.location && (
+                      <>
+                        <span className="text-[#CBD5E1] dark:text-[#374151]">·</span>
+                        <span className="flex items-center gap-1 text-xs text-[#94A3B8] dark:text-[#6B7280]">
+                          <MapPin className="h-3 w-3" aria-hidden="true" />{app.location}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
-                
-                <div className="flex items-center space-x-2 ml-4">
-                  <Badge variant={statusConfig[application.status].variant}>
-                    {statusConfig[application.status].label}
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 h-6 w-6"
-                    asChild
-                  >
-                    <Link href={`/jobs/${application.jobId}`}>
-                      <Eye className="h-3 w-3" />
-                    </Link>
-                  </Button>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', status.className)}>
+                    {status.label}
+                  </span>
+                  <span className="text-xs text-[#94A3B8] dark:text-[#6B7280]">
+                    {new Date(app.appliedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {applications.length > 5 && (
-        <div className="mt-4 text-center">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/applications">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View All {applications.length} Applications
-            </Link>
-          </Button>
+            );
+          })}
         </div>
       )}
     </div>

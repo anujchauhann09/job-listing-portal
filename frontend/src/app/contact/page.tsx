@@ -216,15 +216,9 @@ export default function ContactPage() {
                       <h3 className="font-medium text-secondary-900 dark:text-secondary-100 mb-2">
                         Need Quick Help?
                       </h3>
-                      <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-3">
-                        Check out our Help Center for instant answers to common questions.
+                      <p className="text-sm text-secondary-600 dark:text-secondary-400">
+                        Reach out to us directly and we'll get back to you as soon as possible.
                       </p>
-                      <Link
-                        href={ROUTES.HELP}
-                        className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                      >
-                        Visit Help Center →
-                      </Link>
                     </div>
                   </div>
                 </Card>

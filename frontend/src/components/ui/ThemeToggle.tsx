@@ -16,19 +16,20 @@ export function ThemeToggle({ variant = 'button', className }: ThemeToggleProps)
 
   if (variant === 'compact') {
     return (
-      <Button
-        variant="ghost"
-        size="sm"
+      <button
         onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-        className={cn('w-10 h-10 p-0', className)}
-        aria-label="Toggle theme"
+        className={cn(
+          'w-8 h-8 rounded-lg flex items-center justify-center text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] dark:text-[#9CA3AF] dark:hover:text-[#E5E7EB] dark:hover:bg-[#1F2937] transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+          className
+        )}
+        aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {resolvedTheme === 'dark' ? (
-          <Sun className="h-4 w-4" />
+          <Sun className="h-4 w-4" aria-hidden="true" />
         ) : (
-          <Moon className="h-4 w-4" />
+          <Moon className="h-4 w-4" aria-hidden="true" />
         )}
-      </Button>
+      </button>
     );
   }
 
