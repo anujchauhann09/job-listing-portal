@@ -21,8 +21,9 @@ export { Container, ResponsiveGrid, ResponsiveStack } from './Container';
 export { Progress } from './Progress';
 
 export { Loading, LoadingSpinner, PageLoading } from './Loading';
+export { EmptyState } from './EmptyState';
 
-export { ErrorDisplay, NetworkStatus, EmptyState } from './ErrorDisplay';
+export { ErrorDisplay, NetworkStatus } from './ErrorDisplay';
 export type { ErrorDisplayProps, NetworkStatusProps, EmptyStateProps } from './ErrorDisplay';
 
 export { VisuallyHidden } from './VisuallyHidden';

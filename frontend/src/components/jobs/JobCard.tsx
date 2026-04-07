@@ -1,8 +1,8 @@
 import React from 'react';
-import { Badge } from '@/components/ui/Badge';
 import { Job } from '@/types/job';
 import { MapPin, Calendar, DollarSign, Building2, Briefcase, Wifi } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { JOB_TYPE_BADGE_CLASSES } from '@/lib/constants';
 import { formatJobType, formatExperienceLevel, formatRemoteType, formatSalary, formatPostedDate, getSkillNames } from '@/lib/jobUtils';
 
 export interface JobCardProps {
@@ -13,12 +13,7 @@ export interface JobCardProps {
   showEmployer?: boolean;
 }
 
-const JOB_TYPE_BADGE: Record<string, string> = {
-  FULL_TIME:  'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/30 dark:text-[#93C5FD]',
-  PART_TIME:  'bg-[#FFFBEB] text-[#D97706] dark:bg-[#78350F]/30 dark:text-[#FCD34D]',
-  CONTRACT:   'bg-[#F5F3FF] text-[#7C3AED] dark:bg-[#4C1D95]/30 dark:text-[#C4B5FD]',
-  INTERNSHIP: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/30 dark:text-[#4ADE80]',
-};
+const JOB_TYPE_BADGE: Record<string, string> = JOB_TYPE_BADGE_CLASSES;
 
 export const JobCard: React.FC<JobCardProps> = ({ job, actions, onClick, className, showEmployer = true }) => {
   const skills = getSkillNames(job);

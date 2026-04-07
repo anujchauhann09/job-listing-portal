@@ -34,8 +34,8 @@ const providerConfig = {
         />
       </svg>
     ),
-    bgColor: 'bg-white hover:bg-gray-50 border border-secondary-300',
-    textColor: 'text-secondary-700',
+    bgColor: 'bg-[#4285F4] hover:bg-[#3367D6] dark:bg-[#4285F4] dark:hover:bg-[#3367D6]',
+    textColor: 'text-white',
   },
   linkedin: {
     name: 'LinkedIn',
@@ -90,10 +90,9 @@ export function SocialLogin({
               onClick={() => onProviderClick(provider)}
               disabled={disabled}
               className={cn(
-                'w-full justify-center',
+                'w-full justify-center border-0',
                 config.bgColor,
                 config.textColor,
-                'dark:border-secondary-600'
               )}
             >
               {config.icon}

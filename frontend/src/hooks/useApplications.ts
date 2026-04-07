@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { JobApplication, ApplicationStatus } from '@/types/job';
 import { applicationService, CreateApplicationData } from '@/services/applications';
 
@@ -27,7 +27,10 @@ export function useApplications(options: UseApplicationsOptions = {}): UseApplic
   const [hasApplied, setHasApplied] = useState(false);
   const [existingApplication, setExistingApplication] = useState<JobApplication | null>(null);
 
-  // No dedicated check endpoint — we just try to load my applications and see if this job is there
+  // Ref to avoid stale closure in withdrawApplication
+  const existingApplicationRef = useRef(existingApplication);
+  existingApplicationRef.current = existingApplication;
+
   const checkExistingApplication = useCallback(async (jobId: string): Promise<boolean> => {
     try {
       const response = await applicationService.getMyApplications();
@@ -76,15 +79,20 @@ export function useApplications(options: UseApplicationsOptions = {}): UseApplic
   const withdrawApplication = useCallback(async (applicationUuid: string) => {
     await applicationService.withdrawApplication(applicationUuid);
     setApplications((prev) => prev.filter((a) => a.id !== applicationUuid));
-    if (existingApplication?.id === applicationUuid) {
+    if (existingApplicationRef.current?.id === applicationUuid) {
       setHasApplied(false);
       setExistingApplication(null);
     }
-  }, [existingApplication]);
+  }, []);
 
   const refreshApplications = useCallback(async () => {
-    const response = await applicationService.getMyApplications();
-    if (response.success) setApplications(response.data);
+    setLoading(true);
+    try {
+      const response = await applicationService.getMyApplications();
+      if (response.success) setApplications(response.data);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   return {

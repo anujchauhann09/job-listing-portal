@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useAuth, withAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { Button } from '@/components/ui/Button';
@@ -260,11 +260,8 @@ function ProfilePage() {
       if (jobSeekerFormData.skills.length > 0) updateData.skills = jobSeekerFormData.skills;
 
       await jobSeekerService.updateMyProfile(updateData);
-      
-      const response = await jobSeekerService.getMyProfile();
-      if (response.success && response.data) {
-        setJobSeekerProfile(response.data.profile);
-      }
+
+      setJobSeekerProfile(prev => prev ? { ...prev, ...updateData } : prev);
       
       setIsEditingJobSeeker(false);
     } catch (err: any) {
@@ -354,11 +351,8 @@ function ProfilePage() {
       if (employerFormData.headquartersCountry.trim()) updateData.headquartersCountry = employerFormData.headquartersCountry.trim();
 
       await employerService.updateMyProfile(updateData);
-      
-      const response = await employerService.getMyProfile();
-      if (response.success && response.data) {
-        setEmployerProfile(response.data);
-      }
+
+      setEmployerProfile(prev => prev ? { ...prev, ...updateData } : prev);
       
       setIsEditingEmployer(false);
     } catch (err: any) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StatsCard } from '@/components/dashboard/StatsCard';
@@ -16,7 +16,9 @@ export default function JobSeekerDashboard() {
   const { user } = useAuth();
   const { applications, loading, refreshApplications } = useApplications();
 
-  useEffect(() => { refreshApplications(); }, [refreshApplications]);
+  useEffect(() => {
+    refreshApplications();
+  }, []);
 
   if (!user || user.role !== 'job-seeker') {
     return (
@@ -64,7 +66,6 @@ export default function JobSeekerDashboard() {
         }
       />
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard title="Applications" value={loading ? '—' : applications.length} icon={<FileText className="h-5 w-5" />} />
         <StatsCard title="Pending" value={loading ? '—' : pendingCount} icon={<Clock className="h-5 w-5" />} />

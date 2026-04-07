@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import { use, useState, useEffect } from 'react';
 import { Container } from '@/components/ui/Container';
+import { PageLoading } from '@/components/ui/Loading';
 import { JobDetail } from '@/components/jobs';
 import { JobApplicationForm } from '@/components/applications';
 import { Job } from '@/types/job';
-import { useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
+import { useRouter, notFound } from 'next/navigation';
 import { useApplications } from '@/hooks';
 import { useAuth } from '@/context/AuthContext';
 import { jobService } from '@/services/jobs';
@@ -19,12 +19,12 @@ interface JobDetailPageProps {
 export default function JobDetailPage({ params }: JobDetailPageProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const { id } = React.use(params);
-  const [job, setJob] = React.useState<Job | null>(null);
-  const [pageLoading, setPageLoading] = React.useState(true);
-  const [applyLoading, setApplyLoading] = React.useState(false);
-  const [showApplicationForm, setShowApplicationForm] = React.useState(false);
-  const [notFoundFlag, setNotFoundFlag] = React.useState(false);
+  const { id } = use(params);
+  const [job, setJob] = useState<Job | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
 
   const {
     hasApplied,
@@ -33,7 +33,7 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
     checkExistingApplication,
   } = useApplications({ jobId: id, autoLoad: false });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchJob = async () => {
       try {
         const response = await jobService.getJobByUuid(id);
@@ -51,21 +51,14 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
     fetchJob();
   }, [id]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (job && user?.role === 'job-seeker') {
       checkExistingApplication(job.uuid);
     }
   }, [job, user, checkExistingApplication]);
 
   if (pageLoading) {
-    return (
-      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-secondary-600 dark:text-secondary-400">Loading job...</p>
-        </div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (notFoundFlag || !job) {

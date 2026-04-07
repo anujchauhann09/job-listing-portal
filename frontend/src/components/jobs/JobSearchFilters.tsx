@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { JobSearchFilters as FiltersType } from '@/types/job';
 import { MapPin, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
-import { JOB_TYPES } from '@/lib/constants';
+import { JOB_TYPES, JOB_TYPE_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 export interface JobSearchFiltersProps {
@@ -13,13 +13,6 @@ export interface JobSearchFiltersProps {
   onSearch: () => void;
   loading?: boolean;
 }
-
-const JOB_TYPE_LABELS: Record<string, string> = {
-  FULL_TIME: 'Full Time',
-  PART_TIME: 'Part Time',
-  INTERNSHIP: 'Internship',
-  CONTRACT: 'Contract',
-};
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (

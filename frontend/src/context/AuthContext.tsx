@@ -3,22 +3,23 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, AuthContextType } from '@/types/auth';
 import { authService } from '@/services/auth';
-import { LoginFormData, RegisterFormData, PasswordResetFormData, ChangePasswordFormData } from '@/validators/auth';
+import { LoginFormData, RegisterFormData } from '@/validators/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const SESSION_CACHE_KEY = 'auth_user_cache';
 
-function buildUser(backendUser: any): User {
+function buildUser(backendUser: Record<string, unknown> | { uuid?: string; email?: string; name?: string; role?: string }): User {
   const role = backendUser.role === 'JOB_SEEKER' ? 'job-seeker' : 'employer';
+  const name = (backendUser.name as string) || '';
   const profile = role === 'job-seeker'
-    ? { firstName: backendUser.name || '', lastName: '', location: '', skills: [], experience: '', education: '', profileCompletion: 0 }
-    : { companyName: backendUser.name || '', industry: '', companySize: '', description: '', contactPerson: '', profileCompletion: 0 };
+    ? { firstName: name, lastName: '', location: '', skills: [], experience: '', education: '', profileCompletion: 0 }
+    : { companyName: name, industry: '', companySize: '', description: '', contactPerson: '', profileCompletion: 0 };
   return {
-    id: backendUser.uuid,
-    email: backendUser.email,
-    role: role as any,
-    profile: profile as any,
+    id: backendUser.uuid as string,
+    email: backendUser.email as string,
+    role: role as 'job-seeker' | 'employer',
+    profile: profile as User['profile'],
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           sessionStorage.removeItem(SESSION_CACHE_KEY);
           setUser(null);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         sessionStorage.removeItem(SESSION_CACHE_KEY);
         setUser(null);
       } finally {
@@ -77,8 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(loggedInUser);
       
       return response;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Login failed. Please try again.';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -90,12 +91,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
       const response = await authService.register(data);
-      
       return response;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Registration failed. Please try again.';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -122,25 +121,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const updateProfile = useCallback(async (profileData: any) => {
-    if (!user) {
-      throw new Error('No user logged in');
-    }
-    
+  const updateProfile = useCallback(async (profileData: Partial<User['profile']>) => {
+    if (!user) throw new Error('No user logged in');
     try {
       setLoading(true);
       setError(null);
-      
-      const updatedUser = {
-        ...user,
-        profile: { ...user.profile, ...profileData },
-        updatedAt: new Date(),
-      };
+      const updatedUser = { ...user, profile: { ...user.profile, ...profileData }, updatedAt: new Date() };
       setUser(updatedUser);
-      
       return updatedUser;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Profile update failed. Please try again.';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Profile update failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -148,36 +138,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  const resetPassword = useCallback(async (data: PasswordResetFormData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await authService.resetPassword(data);
-      return response;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Password reset failed. Please try again.';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  const resetPassword = useCallback(async (_data: unknown) => {
+    throw new Error('Password reset is not supported');
   }, []);
 
-  const changePassword = useCallback(async (data: ChangePasswordFormData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await authService.changePassword(data);
-      return response;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Password change failed. Please try again.';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  const changePassword = useCallback(async (_data: unknown) => {
+    throw new Error('Password change is not supported');
   }, []);
 
   const clearError = useCallback(() => {
@@ -267,53 +233,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
-
-export function withAuth<P extends object>(
-  Component: React.ComponentType<P>,
-  requiredRole?: 'job-seeker' | 'employer'
-) {
-  return function AuthenticatedComponent(props: P) {
-    const { user, loading } = useAuth();
-
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        </div>
-      );
-    }
-
-    if (!user) {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
-              Authentication Required
-            </h2>
-            <p className="text-secondary-600 dark:text-secondary-400 mt-2">
-              Please log in to access this page.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    if (requiredRole && user.role !== requiredRole) {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100">
-              Access Denied
-            </h2>
-            <p className="text-secondary-600 dark:text-secondary-400 mt-2">
-              You don't have permission to access this page.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    return <Component {...props} />;
-  };
 }

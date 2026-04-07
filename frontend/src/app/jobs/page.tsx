@@ -5,11 +5,11 @@ import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { JobSearchFilters } from '@/components/jobs/JobSearchFilters';
 import { JobSearchResults } from '@/components/jobs/JobSearchResults';
+import { PageLoading } from '@/components/ui/Loading';
 import { Job, JobSearchFilters as FiltersType } from '@/types/job';
 import { jobService } from '@/services/jobs';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Loader2 } from 'lucide-react';
 
 const DEFAULT_FILTERS: FiltersType = {
   page: 1,
@@ -37,7 +37,7 @@ export default function JobsPage() {
       } else {
         setError('Failed to load jobs');
       }
-    } catch (err: unknown) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load jobs');
     } finally {
       setLoading(false);
@@ -79,9 +79,7 @@ export default function JobsPage() {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-7 h-7 animate-spin text-[#2563EB]" />
-            </div>
+            <PageLoading />
           ) : error ? (
             <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-4 dark:bg-[#7F1D1D]/20 dark:border-[#7F1D1D]">
               <p className="text-sm text-[#DC2626] dark:text-[#F87171]">{error}</p>

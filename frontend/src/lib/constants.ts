@@ -4,9 +4,7 @@ export const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '
 
 export function getFileUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  // Already a full URL
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  // Relative path like /uploads/resumes/file.pdf
   return `${BACKEND_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 
@@ -115,3 +113,25 @@ export const EMPLOYER_PROFILE_FIELDS = [
   'description',
   'contactPerson',
 ] as const;
+
+export const JOB_TYPE_LABELS: Record<string, string> = {
+  FULL_TIME: 'Full Time',
+  PART_TIME: 'Part Time',
+  INTERNSHIP: 'Internship',
+  CONTRACT: 'Contract',
+} as const;
+
+export const JOB_TYPE_BADGE_CLASSES: Record<string, string> = {
+  FULL_TIME:  'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/30 dark:text-[#93C5FD]',
+  PART_TIME:  'bg-[#FFFBEB] text-[#D97706] dark:bg-[#78350F]/30 dark:text-[#FCD34D]',
+  CONTRACT:   'bg-[#F5F3FF] text-[#7C3AED] dark:bg-[#4C1D95]/30 dark:text-[#C4B5FD]',
+  INTERNSHIP: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/30 dark:text-[#4ADE80]',
+} as const;
+
+export const APPLICATION_STATUS_CONFIG = {
+  APPLIED:     { label: 'Applied',      badgeClass: 'bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/20 dark:text-[#93C5FD]' },
+  SHORTLISTED: { label: 'Shortlisted',  badgeClass: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/20 dark:text-[#4ADE80]' },
+  HIRED:       { label: 'Hired',        badgeClass: 'bg-[#F0FDF4] text-[#16A34A] dark:bg-[#14532D]/20 dark:text-[#4ADE80]' },
+  REJECTED:    { label: 'Not Selected', badgeClass: 'bg-[#FEF2F2] text-[#DC2626] dark:bg-[#7F1D1D]/20 dark:text-[#F87171]' },
+  WITHDRAWN:   { label: 'Withdrawn',    badgeClass: 'bg-[#F1F5F9] text-[#64748B] dark:bg-[#1F2937] dark:text-[#9CA3AF]' },
+} as const;

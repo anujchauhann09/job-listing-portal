@@ -1,4 +1,4 @@
-import { LoginFormData, RegisterFormData, PasswordResetFormData, ChangePasswordFormData } from '@/validators/auth';
+import { LoginFormData, RegisterFormData } from '@/validators/auth';
 
 export type UserRole = 'job-seeker' | 'employer';
 
@@ -35,26 +35,16 @@ export interface EmployerProfile {
   profileCompletion: number;
 }
 
-export interface AuthFormData {
-  email: string;
-  password: string;
-  role?: UserRole;
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  rememberMe?: boolean;
-}
-
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (data: LoginFormData) => Promise<any>;
-  register: (data: RegisterFormData) => Promise<any>;
+  login: (data: LoginFormData) => Promise<unknown>;
+  register: (data: RegisterFormData) => Promise<unknown>;
   logout: () => void;
-  resetPassword: (data: PasswordResetFormData) => Promise<any>;
-  changePassword: (data: ChangePasswordFormData) => Promise<any>;
-  updateProfile: (profile: Partial<JobSeekerProfile | EmployerProfile>) => Promise<User>;
+  resetPassword: (data: unknown) => Promise<never>;
+  changePassword: (data: unknown) => Promise<never>;
+  updateProfile: (profile: Partial<User['profile']>) => Promise<User>;
   clearError: () => void;
   refreshUser: () => Promise<User | undefined>;
   loginWithSession: (bearerToken?: string) => Promise<User | undefined>;
