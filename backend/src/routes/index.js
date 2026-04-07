@@ -16,6 +16,7 @@ const jobRoutes = require('@/modules/job/job.routes')
 const jobApplicationRoutes = require('@/modules/job-application/job-application.routes')
 
 const fileRouter = require('@/modules/file/file.access.routes')
+const resumeAnalyzerRoutes = require('@/modules/resume-analyzer/resume-analyzer.routes')
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.use('/', jobRoutes);
 router.use('/', jobApplicationRoutes);
 
 router.use('/uploads', fileRouter);
+router.use('/resume-analyzer', resumeAnalyzerRoutes);
 
 module.exports = router;
 
