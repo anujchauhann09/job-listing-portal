@@ -24,7 +24,11 @@ const handleCallback = async (req, res, next) => {
       `${process.env.FRONTEND_URL}/auth/oauth/success?token=${result.accessToken}`
     );
   } catch (err) {
-    next(err);
+    const message = err?.message || 'Authentication failed';
+    const encoded = encodeURIComponent(message);
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/auth/oauth/success?error=${encoded}`
+    );
   }
 };
 

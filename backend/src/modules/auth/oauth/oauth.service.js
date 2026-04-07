@@ -142,13 +142,22 @@ class OAuthService {
     );
 
     if (existingOAuth) {
-      return existingOAuth.user;
+      const existingUser = existingOAuth.user;
+
+      if (existingUser.roleId !== roleId) {
+        const existingRoleName = existingUser.roleId === ROLE_IDS.EMPLOYER ? 'Employer' : 'Job Seeker';
+        throw new AppException({
+          status: HTTP_STATUS.CONFLICT,
+          message: `This account is registered as a ${existingRoleName}. Please sign in using the ${existingRoleName} option.`,
+        });
+      }
+
+      return existingUser;
     }
 
     let user = await this.repo.findUserByEmail(oauthUser.email);
 
     if (!user) {
-      // Create new user with all profiles
       user = await this.repo.createUserWithProfileAndRole({
         email: oauthUser.email,
         roleId,
@@ -157,7 +166,6 @@ class OAuthService {
         role,
       });
     } else {
-      // Existing user - ensure they have all required profiles
       await this.repo.ensureUserProfiles(
         user.id,
         roleId,
