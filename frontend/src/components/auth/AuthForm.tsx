@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { loginSchema, registerSchema, LoginFormData, RegisterFormData } from '@/validators/auth';
-import { User, Building2, Briefcase } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePasswordStrength } from '@/hooks/usePasswordStrength';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
 interface AuthFormProps {
   mode: 'login' | 'register';
+  initialRole?: 'job-seeker' | 'employer';
   onSubmit: (data: LoginFormData | RegisterFormData) => Promise<void>;
   onModeChange?: (mode: 'login' | 'register') => void;
   onRoleChange?: (role: 'job-seeker' | 'employer') => void;
@@ -66,22 +66,14 @@ function LoginForm({ onSubmit, onModeChange, loading, error, className }: Omit<A
   );
 }
 
-function RegisterForm({ onSubmit, onModeChange, onRoleChange, loading, error, className }: Omit<AuthFormProps, 'mode'>) {
-  const [userType, setUserType] = useState<'job-seeker' | 'employer'>('job-seeker');
-
+function RegisterForm({ onSubmit, onModeChange, onRoleChange, loading, error, className, initialRole = 'job-seeker' }: Omit<AuthFormProps, 'mode'>) {
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '', role: 'job-seeker' },
+    defaultValues: { email: '', password: '', confirmPassword: '', role: initialRole },
   });
 
   const password = watch('password');
   const passwordStrength = usePasswordStrength(password || '');
-
-  const handleRoleChange = (role: 'job-seeker' | 'employer') => {
-    setUserType(role);
-    setValue('role', role);
-    onRoleChange?.(role);
-  };
 
   return (
     <div className={cn('w-full max-w-sm mx-auto', className)}>
@@ -90,33 +82,9 @@ function RegisterForm({ onSubmit, onModeChange, onRoleChange, loading, error, cl
           <Briefcase className="h-5 w-5 text-white" aria-hidden="true" />
         </div>
         <h1 className="text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB]">Create your account</h1>
-        <p className="text-sm text-[#64748B] dark:text-[#9CA3AF] mt-1">Join thousands of professionals</p>
-      </div>
-
-      {/* Role selector */}
-      <div className="mb-5">
-        <p className="text-xs font-medium text-[#374151] dark:text-[#D1D5DB] mb-2">I am a</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { role: 'job-seeker' as const, label: 'Job Seeker', icon: User },
-            { role: 'employer' as const, label: 'Employer', icon: Building2 },
-          ]).map(({ role, label, icon: Icon }) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => handleRoleChange(role)}
-              className={cn(
-                'flex items-center justify-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
-                userType === role
-                  ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB] dark:bg-[#1E3A8A]/20 dark:text-[#60A5FA] dark:border-[#3B82F6]'
-                  : 'border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:border-[#4B5563]'
-              )}
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {label}
-            </button>
-          ))}
-        </div>
+        <p className="text-sm text-[#64748B] dark:text-[#9CA3AF] mt-1">
+          {initialRole === 'employer' ? 'Joining as Employer' : 'Joining as Job Seeker'}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(async (data) => { try { await onSubmit(data); } catch {} })} className="space-y-4">

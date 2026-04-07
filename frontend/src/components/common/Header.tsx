@@ -185,10 +185,10 @@ export function Header({ user, onLogout, className }: HeaderProps) {
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleNavigation(ROUTES.LOGIN)}>
+                <Button variant="ghost" size="sm" onClick={() => handleNavigation('/auth')}>
                   Sign in
                 </Button>
-                <Button variant="primary" size="sm" onClick={() => handleNavigation(ROUTES.REGISTER)}>
+                <Button variant="primary" size="sm" onClick={() => handleNavigation('/auth')}>
                   Sign up
                 </Button>
               </div>
@@ -226,10 +226,10 @@ export function Header({ user, onLogout, className }: HeaderProps) {
               ))}
               {!user && (
                 <div className="pt-3 mt-2 border-t border-[#E2E8F0] dark:border-[#1F2937] flex flex-col gap-2">
-                  <Button variant="ghost" className="w-full justify-center" onClick={() => handleNavigation(ROUTES.LOGIN)}>
+                  <Button variant="ghost" className="w-full justify-center" onClick={() => handleNavigation('/auth')}>
                     Sign in
                   </Button>
-                  <Button variant="primary" className="w-full justify-center" onClick={() => handleNavigation(ROUTES.REGISTER)}>
+                  <Button variant="primary" className="w-full justify-center" onClick={() => handleNavigation('/auth')}>
                     Sign up
                   </Button>
                 </div>

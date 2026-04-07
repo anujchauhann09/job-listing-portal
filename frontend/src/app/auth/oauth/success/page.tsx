@@ -1,10 +1,11 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { ROUTES } from '@/lib/constants';
-import { Loader2 } from 'lucide-react';
+import { Loader2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,28 +13,28 @@ function OAuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { loginWithSession } = useAuth();
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+      return;
+    }
+
     const handleOAuthSuccess = async () => {
       try {
         const token = searchParams.get('token');
 
         if (!token) {
-          setError('No authentication token received');
-          setTimeout(() => router.push(ROUTES.LOGIN), 3000);
+          setError('No authentication token received.');
           return;
         }
 
-        // Exchange the token through the proxy — this sets httpOnly cookies
-        // on the frontend domain (the backend redirect sets them on the backend domain)
         await loginWithSession(token);
-
         router.push(ROUTES.HOME);
-      } catch (error) {
-        console.error('OAuth success handling error:', error);
-        setError('Failed to complete authentication');
-        setTimeout(() => router.push(ROUTES.LOGIN), 3000);
+      } catch {
+        setError('Failed to complete authentication. Please try again.');
       }
     };
 
@@ -42,29 +43,40 @@ function OAuthSuccessContent() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-secondary-50 dark:bg-secondary-900">
-        <div className="text-center p-8 bg-white dark:bg-secondary-800 rounded-lg shadow-lg max-w-md">
-          <div className="w-16 h-16 bg-error-100 dark:bg-error-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] flex items-center justify-center px-4">
+        <div className="w-full max-w-sm bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1F2937] p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-[#FEF2F2] dark:bg-[#7F1D1D]/20 flex items-center justify-center mx-auto mb-4">
+            <XCircle className="h-6 w-6 text-[#DC2626] dark:text-[#F87171]" aria-hidden="true" />
           </div>
-          <h1 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100 mb-2">Authentication Failed</h1>
-          <p className="text-secondary-600 dark:text-secondary-400 mb-4">{error}</p>
-          <p className="text-sm text-secondary-500 dark:text-secondary-500">Redirecting to login page...</p>
+          <h1 className="text-base font-semibold text-[#0F172A] dark:text-[#E5E7EB] mb-2">
+            Sign in failed
+          </h1>
+          <p className="text-sm text-[#64748B] dark:text-[#9CA3AF] mb-6 leading-relaxed">
+            {error}
+          </p>
+          <Link
+            href="/auth"
+            className="inline-flex items-center justify-center w-full h-10 px-4 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+          >
+            Back to sign in
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-secondary-50 dark:bg-secondary-900">
-      <div className="text-center p-8 bg-white dark:bg-secondary-800 rounded-lg shadow-lg max-w-md">
-        <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Loader2 className="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1F2937] p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 flex items-center justify-center mx-auto mb-4">
+          <Loader2 className="h-6 w-6 text-[#2563EB] dark:text-[#60A5FA] animate-spin" aria-hidden="true" />
         </div>
-        <h1 className="text-xl font-semibold text-secondary-900 dark:text-secondary-100 mb-2">Completing Authentication</h1>
-        <p className="text-secondary-600 dark:text-secondary-400">Please wait while we complete your sign in...</p>
+        <h1 className="text-base font-semibold text-[#0F172A] dark:text-[#E5E7EB] mb-1">
+          Completing sign in
+        </h1>
+        <p className="text-sm text-[#64748B] dark:text-[#9CA3AF]">
+          Please wait...
+        </p>
       </div>
     </div>
   );
@@ -73,8 +85,8 @@ function OAuthSuccessContent() {
 export default function OAuthSuccessPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-secondary-50 dark:bg-secondary-900">
-        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] flex items-center justify-center">
+        <Loader2 className="h-7 w-7 text-[#2563EB] animate-spin" />
       </div>
     }>
       <OAuthSuccessContent />

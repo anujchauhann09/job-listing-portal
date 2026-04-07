@@ -11,15 +11,16 @@ type AuthMode = 'login' | 'register';
 
 interface AuthPageProps {
   initialMode?: AuthMode;
+  initialRole?: 'job-seeker' | 'employer';
   onSuccess?: () => void;
   onModeChange?: (mode: 'login' | 'register') => void;
   className?: string;
 }
 
-export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, className }: AuthPageProps) {
+export function AuthPage({ initialMode = 'login', initialRole = 'job-seeker', onSuccess, onModeChange, className }: AuthPageProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'job-seeker' | 'employer'>('job-seeker');
+  const [selectedRole, setSelectedRole] = useState<'job-seeker' | 'employer'>(initialRole);
   const { login, register, loading, error, clearError } = useAuth();
 
   const handleAuthSubmit = async (data: LoginFormData | RegisterFormData) => {
@@ -37,10 +38,6 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
         }, 2000);
       }
     } catch (error) {}
-  };
-
-  const handleRoleChange = (role: 'job-seeker' | 'employer') => {
-    setSelectedRole(role);
   };
 
   const handleSocialLogin = async (provider: string) => {
@@ -76,9 +73,9 @@ export function AuthPage({ initialMode = 'login', onSuccess, onModeChange, class
 
             <AuthForm
               mode={mode}
+              initialRole={selectedRole}
               onSubmit={handleAuthSubmit}
               onModeChange={handleModeChangeInternal}
-              onRoleChange={handleRoleChange}
               loading={loading}
               error={error || undefined}
             />

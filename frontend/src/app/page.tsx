@@ -59,7 +59,6 @@ export default function Home() {
       <Header user={user} onLogout={logout} />
 
       <main className="flex-1">
-        {/* Hero */}
         <section className="relative py-20 sm:py-28 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-[#F8FAFC] dark:from-[#0F172A] dark:via-[#0B0F19] dark:to-[#0B0F19] pointer-events-none" />
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -79,7 +78,7 @@ export default function Home() {
               {!user ? (
                 <>
                   <Button size="lg" asChild>
-                    <Link href={ROUTES.REGISTER}>
+                    <Link href="/auth">
                       Get Started <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Link>
                   </Button>
@@ -103,7 +102,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stats */}
         <section className="py-10 border-y border-[#E2E8F0] dark:border-[#1F2937] bg-white dark:bg-[#0F172A]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
@@ -178,7 +176,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="py-16 bg-[#2563EB] dark:bg-[#1D4ED8]">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Ready to get started?</h2>
@@ -189,7 +186,7 @@ export default function Home() {
               {!user ? (
                 <>
                   <Button variant="secondary" size="lg" asChild>
-                    <Link href={ROUTES.REGISTER}>Sign Up Free</Link>
+                    <Link href="/auth">Sign Up Free</Link>
                   </Button>
                   <Button size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20" asChild>
                     <Link href={ROUTES.LOGIN}>Sign In</Link>

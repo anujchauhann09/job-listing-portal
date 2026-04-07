@@ -1,4 +1,3 @@
-// Backend enum values
 export type JobType = 'FULL_TIME' | 'PART_TIME' | 'INTERNSHIP' | 'CONTRACT';
 export type ExperienceLevel = 'FRESHER' | 'JUNIOR' | 'MID' | 'SENIOR';
 export type RemoteType = 'ONSITE' | 'REMOTE' | 'HYBRID';
@@ -31,7 +30,6 @@ export interface Job {
   updatedAt?: Date;
 }
 
-// For backward compatibility with existing components
 export interface JobLegacy {
   id: string;
   title: string;
